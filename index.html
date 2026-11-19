@@ -393,8 +393,8 @@
     <div class="login-title" id="login-title"></div>
     <div class="login-sub">対策問題集・ログイン</div>
     <form id="login-form" autocomplete="on">
-      <div class="field"><label for="login-email">会社のメールアドレス</label>
-        <input id="login-email" type="email" autocomplete="username" required></div>
+      <div class="field"><label for="login-email">ユーザー名（自由に決めてください）</label>
+        <input id="login-email" type="text" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="20" placeholder="例：tanaka2027" required></div>
       <div class="field"><label for="login-pin">PIN（4〜8桁の数字）</label>
         <input id="login-pin" type="password" inputmode="numeric" pattern="[0-9]{4,8}" autocomplete="current-password" required></div>
       <div class="field"><label for="login-team">チームコード（管理者から共有されたもの）</label>
@@ -402,7 +402,7 @@
       <div class="login-error" id="login-error"></div>
       <button class="btn-primary" id="login-submit" type="submit">ログイン</button>
     </form>
-    <p class="note">初めての方は、ここで入力したPINがそのまま登録されます。PINを忘れた場合は管理者に連絡してください。</p>
+    <p class="note">初めての方は、ここで入力したユーザー名とPINがそのまま登録されます（メールアドレスや本名は不要です）。次回からも同じユーザー名でログインしてください。PINを忘れた場合は管理者に連絡してください。</p>
   </div>
 </div>
 
@@ -1361,12 +1361,18 @@ function startSession() {
   });
 }
 
+// Must match USERNAME_RE in Code.gs. First char not . or - (avoids spreadsheet formula injection).
+const USERNAME_RE = /^[a-z0-9_぀-ヿ一-鿿０-９ａ-ｚ][a-z0-9_.\-぀-ヿ一-鿿０-９ａ-ｚ]{1,19}$/;
+
 function handleLogin(ev) {
   ev.preventDefault();
   const email = document.getElementById("login-email").value.trim().toLowerCase();
   const pin = document.getElementById("login-pin").value.trim();
   const teamCode = document.getElementById("login-team").value.trim();
   const err = document.getElementById("login-error");
+  // "email" is the historical field name; it now holds a user-chosen username.
+  if (email.includes("@")) { err.textContent = "メールアドレスではなく、好きなユーザー名を入力してください。"; return; }
+  if (!USERNAME_RE.test(email)) { err.textContent = "ユーザー名は2〜20文字の英数字・日本語・記号（_ . -）で入力してください（先頭に . や - は使えません）。"; return; }
   if (!/^[0-9]{4,8}$/.test(pin)) { err.textContent = "PINは4〜8桁の数字で入力してください。"; return; }
   const btn = document.getElementById("login-submit");
   btn.disabled = true; btn.textContent = "確認中…"; err.textContent = "";
