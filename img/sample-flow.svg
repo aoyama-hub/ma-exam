@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 230" font-family="Hiragino Sans, Meiryo, sans-serif">
+  <rect width="640" height="230" fill="#ffffff"/>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#64748b"/></marker></defs>
+  <g font-size="15" font-weight="700" text-anchor="middle">
+    <rect x="20"  y="30" width="180" height="50" rx="8" fill="#e0e7ff" stroke="#1e3a8a"/><text x="110" y="61" fill="#1e3a8a">① 秘密保持契約</text>
+    <rect x="230" y="30" width="180" height="50" rx="8" fill="#e0e7ff" stroke="#1e3a8a"/><text x="320" y="61" fill="#1e3a8a">② トップ面談</text>
+    <rect x="440" y="30" width="180" height="50" rx="8" fill="#e0e7ff" stroke="#1e3a8a"/><text x="530" y="61" fill="#1e3a8a">③ 基本合意</text>
+    <rect x="440" y="140" width="180" height="50" rx="8" fill="#dcfce7" stroke="#166534"/><text x="530" y="171" fill="#166534">④ デュー・ディリジェンス</text>
+    <rect x="230" y="140" width="180" height="50" rx="8" fill="#dcfce7" stroke="#166534"/><text x="320" y="171" fill="#166534">⑤ 最終契約</text>
+    <rect x="20"  y="140" width="180" height="50" rx="8" fill="#fef3c7" stroke="#92400e"/><text x="110" y="171" fill="#92400e">⑥ クロージング</text>
+  </g>
+  <g stroke="#64748b" stroke-width="2" fill="none" marker-end="url(#a)">
+    <path d="M200 55H226"/><path d="M410 55H436"/><path d="M530 80V136"/><path d="M440 165H414"/><path d="M230 165H204"/>
+  </g>
+</svg>
