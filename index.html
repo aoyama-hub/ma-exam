@@ -138,6 +138,28 @@
     .exp-taboo-warn { background: var(--taboo-bg); color: var(--taboo); font-size: 0.82rem; font-weight: 600; padding: 6px 10px; border-radius: 6px; margin-bottom: 8px; }
     .exp-source { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border-strong); font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
     .b-body .exp-source { border-top: none; padding-top: 0; }
+    .src-link { display: inline; border: none; background: none; padding: 0; font: inherit; color: var(--accent); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; text-align: left; }
+    /* Book reader */
+    .reader { position: fixed; inset: 0; background: #525659; z-index: 50; display: flex; flex-direction: column; }
+    .reader-top { display: flex; align-items: center; gap: 8px; padding: 8px 10px; padding-top: calc(8px + env(safe-area-inset-top)); background: var(--card-bg); border-bottom: 1px solid var(--border); }
+    .reader-select { flex: 1; min-width: 0; padding: 7px 8px; border: 1px solid var(--border-strong); border-radius: 7px; background: var(--card-bg); color: var(--text); font-size: 0.85rem; }
+    .reader-page { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; font-variant-numeric: tabular-nums; min-width: 5.5em; text-align: right; }
+    .reader-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 10px 0 calc(24px + env(safe-area-inset-bottom)); }
+    .rp { position: relative; max-width: 820px; margin: 0 auto 10px; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.35); }
+    .rp img { display: block; width: 100%; height: 100%; }
+    .rp-no { position: absolute; right: 6px; bottom: 4px; font-size: 0.65rem; color: #94a3b8; }
+    .rp-marker { max-width: 820px; margin: 0 auto 6px; padding: 6px 10px; border-radius: 6px; background: #fde68a; color: #78350f; font-size: 0.8rem; font-weight: 700; }
+    .rp-chap { max-width: 820px; margin: 14px auto 6px; color: #e5e7eb; font-size: 0.78rem; font-weight: 700; padding: 0 4px; }
+    .book-group { border: 1px solid var(--border); border-radius: var(--radius); background: var(--card-bg); margin-top: 8px; overflow: hidden; }
+    .book-group summary { list-style: none; display: flex; align-items: center; gap: 10px; padding: 13px 14px; cursor: pointer; font-weight: 700; font-size: 0.92rem; }
+    .book-group summary::-webkit-details-marker { display: none; }
+    .book-group summary::after { content: "›"; margin-left: auto; color: var(--text-muted); transition: transform 0.15s; }
+    .book-group[open] summary::after { transform: rotate(90deg); }
+    .book-group .bg-sub { font-size: 0.72rem; color: var(--text-muted); font-weight: 400; }
+    .chap-list { list-style: none; border-top: 1px solid var(--border); }
+    .chap-list button { display: flex; width: 100%; gap: 8px; align-items: baseline; text-align: left; border: none; background: none; padding: 11px 14px; font: inherit; font-size: 0.86rem; color: var(--text); cursor: pointer; border-bottom: 1px solid var(--border); }
+    .chap-list button span:last-child { margin-left: auto; color: var(--text-muted); font-size: 0.72rem; white-space: nowrap; }
+    .books-heading { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin: 18px 2px 2px; }
     .exp-overview { font-size: 0.9rem; margin-bottom: 10px; color: var(--text-sub); white-space: pre-line; }
     .exp-details-list { list-style: none; display: flex; flex-direction: column; gap: 6px; border-top: 1px dashed var(--border-strong); padding-top: 10px; font-size: 0.85rem; }
     .exp-item { padding: 6px 10px; background: var(--card-bg); border-radius: 6px; border: 1px solid var(--border); white-space: pre-line; }
@@ -446,6 +468,16 @@
   <div class="study-bottom hidden" id="study-bottom"></div>
 </div>
 
+<!-- ===== Book reader (page images, whole book, opened at a chapter / section) ===== -->
+<div class="reader hidden" id="reader">
+  <div class="reader-top">
+    <button class="study-close" id="reader-close" aria-label="閉じる">✕</button>
+    <select class="reader-select" id="reader-chapter" aria-label="章を選択"></select>
+    <span class="reader-page" id="reader-page"></span>
+  </div>
+  <div class="reader-body" id="reader-body"></div>
+</div>
+
 <div class="modal hidden" id="modal"><div class="modal-box" id="modal-box"></div></div>
 
 <div class="container hidden" id="login-view">
@@ -651,10 +683,11 @@ function computeSummary() {
 /* Pull latest progress when returning to the app (e.g. studied on phone, now on PC). */
 function refreshFromServer() {
   if (!session || !appShown || dirty || saving || exam || study) return;
-  api("load", { questionsVersion }).then(res => {
+  api("load", { questionsVersion, booksVersion }).then(res => {
     if (dirty || saving || exam || study) return;
     history = res.history || history;
     setLinks(res.links);
+    applyBooks(res);
     if (appMode === "BOOKS") renderBooks();
     const qChanged = applyQuestions(res);
     const next = normalizeState(res.state);
@@ -923,8 +956,117 @@ function sourceText(q) {
   return s.replace(/／/g, "　／　");
 }
 function sourceHtml(q) {
-  const s = sourceText(q);
-  return s ? `<div class="exp-source">📖 出典：${escapeHtml(s)}</div>` : "";
+  const src = String(q.source || "").trim();
+  if (!src) return "";
+  if (!BOOKS) return `<div class="exp-source">📖 出典：${escapeHtml(sourceText(q))}</div>`;
+  // Each cited book/chapter becomes a link that opens the reader at that chapter (scrolled to the section).
+  let lastBook = null;
+  const html = src.split(/(／|\/|、|・)/).map(part => {
+    if (/^(／|\/|、|・)$/.test(part)) return part === "／" ? "　／　" : escapeHtml(part);
+    const t = resolveSource(part, lastBook);
+    if (t) lastBook = t.book;
+    const label = escapeHtml(part.replace(/実務の基本|スタンダード|株式譲渡の税務/g, m => BOOK_TITLES[m]));
+    return t ? `<button class="src-link" data-book="${t.book}" data-page="${t.page}" data-mark="${escapeHtml(t.mark)}">${label}</button>` : label;
+  }).join("");
+  return `<div class="exp-source">📖 出典：${html}</div>`;
+}
+
+/* ==========================================================================
+   BOOK READER — page images in Google Drive (file IDs + chapter index sent after login)
+========================================================================== */
+const BOOKS_KEY = "ma_exam_books_v1";
+const BOOK_KEYS = { "実務の基本": "jitsumu", "スタンダード": "standard", "株式譲渡の税務": "zeimu" };
+const BOOK_ICONS = { jitsumu: "📕", standard: "📗", zeimu: "📘" };
+let BOOKS = null, booksVersion = null;   // { index: {key: {title, short, pages, w, h, chapters}}, pages: {key: [fileId…]} }
+let reader = null;
+
+function applyBooks(res) {
+  if (!res || !res.books || !res.books.index) return false;
+  BOOKS = res.books; booksVersion = res.booksVersion;
+  lsSet(BOOKS_KEY, { owner: userEmail, version: booksVersion, books: BOOKS });
+  return true;
+}
+function chapNo(s) {
+  const m = /第([0-9０-９]+|[一二三四五六七八九十]+)章/.exec(s || "");
+  if (!m) return null;
+  const t = m[1].replace(/[０-９]/g, d => "０１２３４５６７８９".indexOf(d));
+  if (/^\d+$/.test(t)) return Number(t);
+  const K = "一二三四五六七八九";
+  if (t === "十") return 10;
+  if (t[0] === "十") return 10 + K.indexOf(t[1]) + 1;
+  if (t[1] === "十") return (K.indexOf(t[0]) + 1) * 10 + (t[2] ? K.indexOf(t[2]) + 1 : 0);
+  return K.indexOf(t) + 1;
+}
+/* "スタンダード 第七章「7-7 資産（不動産）」" → { book, page, mark } */
+function resolveSource(part, fallbackBook) {
+  const short = Object.keys(BOOK_KEYS).find(k => part.includes(k));
+  const book = short ? BOOK_KEYS[short] : fallbackBook;
+  const idx = book && BOOKS && BOOKS.index[book];
+  const n = chapNo(part);
+  if (!idx || !n || !BOOKS.pages[book]) return null;
+  const appendix = part.includes("巻末");
+  const ch = idx.chapters.find(c => c.no === n && Boolean(c.appendix) === appendix && (!appendix || c.title.includes(part.includes("自主規制") ? "自主規制" : "契約書")));
+  if (!ch || !ch.page) return null;
+  const sm = /「(.+)」\s*$/.exec(part);
+  const sec = sm && ch.sections.find(s => s[0] === sm[1]);
+  return { book, page: (sec && sec[1]) || ch.page, mark: sec ? `▶ ${sec[0]}` : "" };
+}
+function pageSrc(book, p) {
+  const id = BOOKS.pages[book] && BOOKS.pages[book][p - 1];
+  if (!id) return "";
+  return /^[\w-]{25,}$/.test(id) ? `https://drive.google.com/thumbnail?id=${id}&sz=w1100` : id;   // Drive ID (or a local path when testing)
+}
+function chapterOf(book, p) {
+  const chs = BOOKS.index[book].chapters.filter(c => c.page);
+  let cur = chs[0];
+  chs.forEach(c => { if (c.page <= p) cur = c; });
+  return cur;
+}
+function openReader(book, page, mark) {
+  const idx = BOOKS && BOOKS.index[book];
+  if (!idx) return;
+  page = Math.min(Math.max(1, page || 1), idx.pages);
+  reader = { book };
+  const sel = document.getElementById("reader-chapter");
+  sel.innerHTML = `<option value="1">${escapeHtml(idx.title)}（表紙から）</option>` +
+    idx.chapters.filter(c => c.page).map(c => `<option value="${c.page}">${escapeHtml(c.title)}</option>`).join("");
+  const starts = new Map(idx.chapters.filter(c => c.page).map(c => [c.page, c.title]));
+  const ratio = `${idx.w} / ${idx.h}`;
+  let html = "";
+  for (let p = 1; p <= idx.pages; p++) {
+    if (starts.has(p)) html += `<div class="rp-chap">${escapeHtml(starts.get(p))}</div>`;
+    if (p === page && mark) html += `<div class="rp-marker" id="rp-mark">${escapeHtml(mark)} ここから</div>`;
+    const src = pageSrc(book, p);
+    html += `<div class="rp" id="rp-${p}" data-p="${p}" style="aspect-ratio:${ratio}">${src ? `<img src="${escapeHtml(src)}" loading="lazy" decoding="async" alt="p.${p}">` : ""}<span class="rp-no">${p}</span></div>`;
+  }
+  const body = document.getElementById("reader-body");
+  body.innerHTML = html;
+  document.getElementById("reader").classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+  const target = document.getElementById(mark ? "rp-mark" : `rp-${page}`) || document.getElementById(`rp-${page}`);
+  body.scrollTop = target ? target.offsetTop - 6 : 0;
+  updateReaderPos();
+}
+function closeReader() {
+  reader = null;
+  document.getElementById("reader").classList.add("hidden");
+  document.getElementById("reader-body").innerHTML = "";
+  if (!study && !exam) document.body.style.overflow = "";
+}
+function updateReaderPos() {
+  if (!reader) return;
+  const body = document.getElementById("reader-body");
+  const y = body.scrollTop + body.clientHeight * 0.3;
+  const idx = BOOKS.index[reader.book];
+  if (!reader.els) reader.els = Array.from(body.querySelectorAll(".rp"));
+  let lo = 0, hi = reader.els.length - 1;                // last page whose top is above y (binary search)
+  while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (reader.els[mid].offsetTop <= y) lo = mid; else hi = mid - 1; }
+  const p = lo + 1;
+  document.getElementById("reader-page").textContent = `${p} / ${idx.pages}`;
+  const ch = chapterOf(reader.book, p);
+  const sel = document.getElementById("reader-chapter");
+  const v = String(ch && ch.page <= p ? ch.page : 1);
+  if (sel.value !== v) sel.value = v;
 }
 /* Answered state: options keep their red/green colouring and each one shows its own explanation underneath. */
 function revealedOptionsHtml(q, userAns, order) {
@@ -975,13 +1117,22 @@ function setLinks(list) {
 }
 function renderBooks() {
   const el = document.getElementById("books-list");
-  el.innerHTML = LINKS.length ? `<div class="tb-list">${LINKS.map(l => `
+  const links = LINKS.length ? `<div class="tb-list">${LINKS.map(l => `
     <a class="tb-item" href="${escapeHtml(l.url)}" target="_blank" rel="noopener">
       <span class="tb-icon">${escapeHtml(l.icon || "📖")}</span>
       <span class="tb-main"><div class="tb-title">${escapeHtml(l.title || l.url)}</div>${l.note ? `<div class="tb-note">${escapeHtml(l.note)}</div>` : ""}</span>
       <span class="tb-go">↗</span>
-    </a>`).join("")}</div>`
-    : `<div class="empty-state">リンクはまだ登録されていません。</div>`;
+    </a>`).join("")}</div>` : "";
+  const books = BOOKS ? `<div class="books-heading">教科書を読む</div>` + Object.keys(BOOKS.index).filter(k => BOOKS.pages[k]).map(k => {
+    const b = BOOKS.index[k];
+    return `<details class="book-group"><summary><span>${BOOK_ICONS[k] || "📖"}</span><span>${escapeHtml(b.title)}<div class="bg-sub">${b.chapters.filter(c => !c.appendix).length}章・${b.pages}ページ</div></span></summary>
+      <ul class="chap-list">
+        <li><button data-read="${k}" data-page="1"><span>表紙から読む</span><span>p.1</span></button></li>
+        ${b.chapters.filter(c => c.page).map(c => `<li><button data-read="${k}" data-page="${c.page}"><span>${escapeHtml(c.title)}</span><span>p.${c.page}</span></button></li>`).join("")}
+      </ul></details>`;
+  }).join("") : "";
+  el.innerHTML = (links + books) || `<div class="empty-state">リンクはまだ登録されていません。</div>`;
+  el.querySelectorAll("[data-read]").forEach(b => b.onclick = () => openReader(b.dataset.read, Number(b.dataset.page)));
 }
 
 /* ---------- Study session screen (Anki-style: one card at a time, saved after every answer) ---------- */
@@ -1552,6 +1703,23 @@ function initApp() {
   document.querySelectorAll(".tab").forEach(t => t.onclick = () => setAppMode(t.dataset.app));
   document.getElementById("btn-reset").onclick = resetProgressDialog;
   document.getElementById("study-close").onclick = closeStudy;
+  // 📖 出典 links (anywhere) open the book reader
+  document.addEventListener("click", e => {
+    const a = e.target.closest && e.target.closest(".src-link");
+    if (a) openReader(a.dataset.book, Number(a.dataset.page), a.dataset.mark);
+  });
+  document.getElementById("reader-close").onclick = closeReader;
+  document.getElementById("reader-chapter").onchange = e => {
+    const el = document.getElementById(`rp-${e.target.value}`);
+    const body = document.getElementById("reader-body");
+    if (el) body.scrollTop = el.offsetTop - (el.previousElementSibling && el.previousElementSibling.classList.contains("rp-chap") ? 34 : 6);
+  };
+  let rpTick = false;
+  document.getElementById("reader-body").addEventListener("scroll", () => {
+    if (rpTick) return;
+    rpTick = true;
+    requestAnimationFrame(() => { rpTick = false; updateReaderPos(); });
+  }, { passive: true });
   let bt;
   document.getElementById("browse-search").addEventListener("input", e => {
     clearTimeout(bt);
@@ -1574,6 +1742,7 @@ function initApp() {
 
   document.addEventListener("keydown", e => {
     if (e.target.tagName === "INPUT" || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (reader) { if (e.key === "Escape") closeReader(); return; }
     const n = Number(e.key);
     if (exam && !document.getElementById("cbt").classList.contains("hidden")) {
       if (!document.getElementById("modal").classList.contains("hidden")) return;
@@ -1662,6 +1831,9 @@ function startSession() {
   else { setQuestions([]); questionsVersion = null; }
   const lc = lsGet(LINKS_KEY);
   LINKS = lc && lc.owner === userEmail && Array.isArray(lc.links) ? lc.links : [];
+  const bc = lsGet(BOOKS_KEY);
+  if (bc && bc.owner === userEmail && bc.books && bc.books.index) { BOOKS = bc.books; booksVersion = bc.version; }
+  else { BOOKS = null; booksVersion = null; }
   const cached = lsGet(CACHE_PREFIX + userEmail);
   if (cached && questionsVersion) {
     state = normalizeState(cached.state);
@@ -1672,10 +1844,11 @@ function startSession() {
     showOverlay();
   }
 
-  api("load", { questionsVersion }).then(res => {
+  api("load", { questionsVersion, booksVersion }).then(res => {
     history = res.history || [];
     setLinks(res.links);
-    const qChanged = applyQuestions(res);
+    const bChanged = applyBooks(res);
+    const qChanged = applyQuestions(res) || bChanged;   // re-render so 出典 links appear
     if (dirty) flushSave();                  // local unsaved changes win
     else state = normalizeState(res.state);
     cacheLocal();
@@ -1738,7 +1911,7 @@ function resetSessionVars() {
 }
 function forceLogout(msg) {
   lsDel(SESSION_KEY); session = null;
-  lsDel(QCACHE_KEY); lsDel(LINKS_KEY); LINKS = []; setQuestions([]); questionsVersion = null;
+  lsDel(QCACHE_KEY); lsDel(LINKS_KEY); LINKS = []; lsDel(BOOKS_KEY); BOOKS = null; booksVersion = null; if (reader) closeReader(); setQuestions([]); questionsVersion = null;
   resetSessionVars();
   showLogin(msg);
 }
@@ -1747,7 +1920,7 @@ function logout() {
   if (!confirm(unsaved ? "保存されていない学習履歴があります。ログアウトすると失われます。ログアウトしますか？" : "ログアウトしますか？")) return;
   api("logout").catch(() => {});
   lsDel(CACHE_PREFIX + userEmail);
-  lsDel(QCACHE_KEY); lsDel(LINKS_KEY); LINKS = []; setQuestions([]); questionsVersion = null;
+  lsDel(QCACHE_KEY); lsDel(LINKS_KEY); LINKS = []; lsDel(BOOKS_KEY); BOOKS = null; booksVersion = null; if (reader) closeReader(); setQuestions([]); questionsVersion = null;
   lsDel(SESSION_KEY); session = null;
   resetSessionVars();
   showLogin();
