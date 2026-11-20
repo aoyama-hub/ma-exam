@@ -289,8 +289,66 @@
     .btn-top { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--primary); color: var(--card-bg); font-size: 1.1rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.25); display: none; }
     .btn-top.show { display: block; }
 
+    /* Memory levels (study menu, study screen, 問題一覧) */
+    :root { --lv-new: var(--border-strong); --lv-learning: #f59e0b; --lv-young: #60a5fa; --lv-mastered: var(--success); }
+    .lv-bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: var(--subtle-bg); }
+    .lv-bar > span { height: 100%; }
+    .lv-bar .lv-learning, .lv-dot.lv-learning { background: var(--lv-learning); }
+    .lv-bar .lv-young, .lv-dot.lv-young { background: var(--lv-young); }
+    .lv-bar .lv-mastered, .lv-dot.lv-mastered { background: var(--lv-mastered); }
+    .lv-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; vertical-align: middle; background: transparent; border: 1.5px solid var(--lv-new); }
+    .lv-dot.lv-learning, .lv-dot.lv-young, .lv-dot.lv-mastered { border-color: transparent; }
+    .lv-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 0.72rem; color: var(--text-muted); margin-top: 8px; }
+    .lv-legend b { color: var(--text-sub); font-weight: 700; }
+    .miss-tag { font-size: 0.68rem; font-weight: 700; color: var(--danger); background: var(--danger-bg); border-radius: 4px; padding: 0 6px; white-space: nowrap; flex-shrink: 0; }
+
+    /* Study menu */
+    .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .tile { text-align: center; background: var(--bg); border-radius: 8px; padding: 10px 4px; }
+    .tile-val { display: block; font-size: 1.25rem; font-weight: 800; color: var(--primary); line-height: 1.2; }
+    .tile-val small { font-size: 0.7rem; font-weight: 600; }
+    .tile-label { font-size: 0.68rem; color: var(--text-muted); }
+    .subj-row { margin-top: 10px; }
+    .subj-head { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 3px; color: var(--text-sub); }
+    .subj-head span:last-child { color: var(--text-muted); font-size: 0.74rem; }
+    .menu-opts { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+    .mode-desc { font-size: 0.8rem; color: var(--text-sub); background: var(--bg); border-radius: 6px; padding: 8px 10px; }
+    .mode-desc strong { color: var(--primary); }
+
+    /* Study screen */
+    .study { position: fixed; inset: 0; background: var(--bg); z-index: 40; display: flex; flex-direction: column; }
+    .study-top { display: flex; align-items: center; gap: 12px; padding: 10px 14px; padding-top: calc(10px + env(safe-area-inset-top)); }
+    .study-close { background: none; border: none; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; padding: 4px 6px; line-height: 1; }
+    .study-progress { flex: 1; height: 5px; background: var(--subtle-bg); border-radius: 3px; overflow: hidden; }
+    .study-progress > div { height: 100%; background: var(--accent); transition: width 0.25s; }
+    .study-count { font-size: 0.78rem; color: var(--text-muted); font-variant-numeric: tabular-nums; min-width: 3.5em; text-align: right; }
+    .study-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 6px 16px 24px; }
+    .study-card { max-width: 720px; margin: 0 auto; }
+    .study-meta { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+    .lv-tag { font-size: 0.68rem; font-weight: 700; color: var(--text-muted); display: inline-flex; align-items: center; gap: 4px; }
+    .study-card .q-text { font-size: 1.02rem; margin-bottom: 18px; }
+    .study-card .explanation-box { margin-bottom: 8px; }
+    .study-bottom { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 10px 12px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); background: var(--card-bg); border-top: 1px solid var(--border); }
+    .study-bottom.single { grid-template-columns: 1fr; }
+    .grade { border: none; border-radius: 9px; padding: 9px 2px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 1px; font-family: inherit; color: #fff; }
+    .grade .g-label { font-size: 0.84rem; font-weight: 700; white-space: nowrap; }
+    .grade .g-ivl { font-size: 0.68rem; opacity: 0.85; }
+    .grade.g1 { background: #dc2626; } .grade.g2 { background: #ea580c; } .grade.g3 { background: #16a34a; } .grade.g4 { background: #2563eb; }
+    .study-hint { font-size: 0.72rem; color: var(--text-muted); text-align: center; grid-column: 1 / -1; margin-top: -2px; }
+    .study-done { text-align: center; max-width: 420px; margin: 10vh auto 0; display: flex; flex-direction: column; gap: 10px; }
+    .study-done .big { font-size: 2.6rem; }
+    .study-done .title { font-size: 1.15rem; font-weight: 800; color: var(--primary); }
+    .study-done .sub { color: var(--text-sub); font-size: 0.9rem; }
+
+    /* Login */
+    .login-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--subtle-bg); padding: 4px; border-radius: 8px; margin-bottom: 14px; }
+    .login-mode { border: none; background: none; padding: 8px; border-radius: 6px; font-size: 0.88rem; font-weight: 600; color: var(--text-muted); cursor: pointer; }
+    .login-mode.active { background: var(--card-bg); color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+
     @media (max-width: 480px) {
       body { padding-left: 8px; padding-right: 8px; }
+      .tile-val { font-size: 1.1rem; }
+      .grade .g-label { font-size: 0.76rem; }
       .card { padding: 14px; }
       .question-card { padding: 16px; }
       h1 { font-size: 1rem; }
@@ -325,44 +383,10 @@
 
   <!-- ===== Practice ===== -->
   <section id="practice-view">
-    <div class="card">
-      <div class="stats-bar">
-        <div class="stat"><span class="stat-label">問題数</span><span class="stat-val" id="stat-total">0</span></div>
-        <div class="stat"><span class="stat-label">回答済</span><span class="stat-val" id="stat-answered">0</span></div>
-        <div class="stat"><span class="stat-label">正答率</span><span class="stat-val" id="stat-rate">-</span></div>
-        <div class="stat"><span class="stat-label">要復習</span><span class="stat-val" id="stat-mistakes" style="color:var(--danger)">0</span></div>
-      </div>
-      <div class="progress-track" title="正解 / 不正解 / 未回答">
-        <div class="progress-correct" id="bar-correct" style="width:0%"></div>
-        <div class="progress-wrong" id="bar-wrong" style="width:0%"></div>
-      </div>
-    </div>
-
-    <div class="card controls">
-      <div class="filter-group" id="category-filters"><span class="filter-label">科目</span></div>
-      <div class="filter-group" id="mode-filters">
-        <span class="filter-label">出題</span>
-        <button class="btn-filter" data-mode="ALL">すべて</button>
-        <button class="btn-filter" data-mode="UNANSWERED">未回答</button>
-        <button class="btn-filter mistake-mode" data-mode="MISTAKES">⚠️ 要復習 (<span id="mistake-count-badge">0</span>)</button>
-        <button class="btn-filter" data-mode="BOOKMARKS">★ (<span id="bookmark-count-badge">0</span>)</button>
-      </div>
-      <div class="filter-group" id="view-filters">
-        <span class="filter-label">表示</span>
-        <button class="btn-filter" data-view="SINGLE">1問ずつ</button>
-        <button class="btn-filter" data-view="LIST">一覧</button>
-        <button class="btn-filter" id="btn-shuffle">🔀 シャッフル</button>
-      </div>
-      <div class="filter-group">
-        <input type="search" class="search-input" id="search-input" placeholder="キーワード検索（問題文・選択肢・解説）" autocomplete="off">
-      </div>
-    </div>
-
-    <main id="question-list"></main>
-
+    <div id="study-menu"></div>
     <footer>
-      <button class="btn-text" id="btn-reset">学習モードの履歴をリセット</button>
-      <div>学習履歴はアカウントに保存され、どの端末からでも続きから学習できます</div>
+      <button class="btn-text" id="btn-reset">学習記録をリセット…</button>
+      <div>学習記録はアカウントに保存され、どの端末からでも続きから学習できます</div>
     </footer>
   </section>
 
@@ -379,7 +403,8 @@
       <div class="filter-group">
         <input type="search" class="search-input" id="browse-search" placeholder="キーワード・問題番号で検索" autocomplete="off">
       </div>
-      <div class="legend" style="margin:0"><span><span class="b-dot ok"></span> 正解</span><span><span class="b-dot ng"></span> 不正解</span><span><span class="b-dot"></span> 未回答</span><span>タップで解答・解説を表示</span></div>
+      <div class="filter-group" id="browse-lv"><span class="filter-label">状態</span></div>
+      <div class="legend" style="margin:0"><span><span class="lv-dot lv-mastered"></span> 習得</span><span><span class="lv-dot lv-young"></span> 定着中</span><span><span class="lv-dot lv-learning"></span> 学習中</span><span><span class="lv-dot"></span> 未学習</span><span>×N＝ミス回数・タップで解答と解説</span></div>
     </div>
     <div id="browse-list"></div>
   </section>
@@ -410,6 +435,15 @@
   </div>
 </div>
 
+<!-- ===== Study session (minimal full-screen) ===== -->
+<div class="study hidden" id="study">
+  <div class="study-top">
+    <button class="study-close" id="study-close" aria-label="終了">✕</button>
+  </div>
+  <div class="study-body" id="study-body"></div>
+  <div class="study-bottom hidden" id="study-bottom"></div>
+</div>
+
 <div class="modal hidden" id="modal"><div class="modal-box" id="modal-box"></div></div>
 
 <div class="container hidden" id="login-view">
@@ -418,16 +452,18 @@
     <div class="login-title" id="login-title"></div>
     <div class="login-sub">対策問題集・ログイン</div>
     <form id="login-form" autocomplete="on">
-      <div class="field"><label for="login-email">ユーザー名（自由に決めてください）</label>
+      <div class="login-modes" id="login-modes">
+        <button type="button" class="login-mode active" data-lm="existing">続きから</button>
+        <button type="button" class="login-mode" data-lm="new">はじめて</button>
+      </div>
+      <div class="field"><label for="login-email" id="login-email-label">ユーザー名</label>
         <input id="login-email" type="text" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="20" placeholder="例：tanaka2027" required></div>
-      <div class="field"><label for="login-pin">PIN（4〜8桁の数字）</label>
-        <input id="login-pin" type="password" inputmode="numeric" pattern="[0-9]{4,8}" autocomplete="current-password" required></div>
       <div class="field"><label for="login-team">チームコード（管理者から共有されたもの）</label>
-        <input id="login-team" type="text" autocomplete="off" autocapitalize="off" required></div>
+        <input id="login-team" type="password" autocomplete="current-password" autocapitalize="off" required></div>
       <div class="login-error" id="login-error"></div>
       <button class="btn-primary" id="login-submit" type="submit">ログイン</button>
     </form>
-    <p class="note">初めての方は、ここで入力したユーザー名とPINがそのまま登録されます（メールアドレスや本名は不要です）。次回からも同じユーザー名でログインしてください。PINを忘れた場合は管理者に連絡してください。</p>
+    <p class="note" id="login-note"></p>
   </div>
 </div>
 
@@ -538,8 +574,8 @@ function validateBank() {
 
 /* Re-render whichever screen is showing (after new data arrives). */
 function refreshCurrentView(questionsChanged) {
-  if (exam) return;
-  if (appMode === "PRACTICE") { renderCategories(); updateStats(); if (questionsChanged) rebuildSession(); else render(); }
+  if (exam || study) return;
+  if (appMode === "PRACTICE") renderStudyMenu();
   else if (appMode === "EXAM") renderExamStart();
   else if (appMode === "BROWSE") renderBrowse();
 }
@@ -549,7 +585,7 @@ const SESSION_KEY = "ma_exam_session_v1";
 const CACHE_PREFIX = "ma_exam_cache_v1_";
 const PENDING_EXAMS_PREFIX = "ma_exam_pending_results_v1_";
 let session = lsGet(SESSION_KEY);
-let state = { answers: {}, mistakes: {}, bookmarks: {} };
+let state = { answers: {}, srs: {}, days: {} };
 let history = [];
 let userEmail = "";
 let saveTimer = null, saving = false, dirty = false;
@@ -568,8 +604,18 @@ function cacheLocal() {
   if (userEmail) lsSet(CACHE_PREFIX + userEmail, { state, history, dirty: dirty || saving });
 }
 function normalizeState(s) {
-  if (!s || typeof s !== "object") return { answers: {}, mistakes: {}, bookmarks: {} };
-  return { answers: s.answers || {}, mistakes: s.mistakes || {}, bookmarks: s.bookmarks || {} };
+  const obj = o => (o && typeof o === "object" && !Array.isArray(o)) ? o : {};
+  s = obj(s);
+  const out = { answers: obj(s.answers), srs: obj(s.srs), days: obj(s.days) };
+  if (!s.srs) {   // old format {answers, mistakes, bookmarks}: turn past answers into review cards
+    Object.keys(out.answers).forEach(id => {
+      const q = byId.get(Number(id));
+      if (!q) return;
+      const wrong = out.answers[id] !== q.answer || (s.mistakes && s.mistakes[id]);
+      out.srs[id] = wrong ? { s: 1, st: 0, i: 0, e: 2.5, r: 1, w: 1, d: 0, t: 0 } : { s: 2, st: 0, i: 1, e: 2.5, r: 1, w: 0, d: 0, t: 0 };
+    });
+  }
+  return out;
 }
 function setSync(s) {
   const el = document.getElementById("sync-status");
@@ -597,13 +643,14 @@ function flushSave() {
 function computeSummary() {
   let answered = 0, correct = 0;
   BANK.forEach(q => { if (isAnswered(q)) { answered++; if (state.answers[q.id] === q.answer) correct++; } });
-  return { answered, correct, total: BANK.length, mistakes: BANK.filter(q => state.mistakes[q.id]).length };
+  // "mistakes" fills the sheet's 要復習 column: number of 苦手 questions
+  return { answered, correct, total: BANK.length, mistakes: BANK.filter(q => isWeak(q.id)).length };
 }
 /* Pull latest progress when returning to the app (e.g. studied on phone, now on PC). */
 function refreshFromServer() {
-  if (!session || !appShown || dirty || saving || exam) return;
+  if (!session || !appShown || dirty || saving || exam || study) return;
   api("load", { questionsVersion }).then(res => {
-    if (dirty || saving || exam) return;
+    if (dirty || saving || exam || study) return;
     history = res.history || history;
     setLinks(res.links);
     if (appMode === "BOOKS") renderBooks();
@@ -633,121 +680,228 @@ function flushExamResults() {
 }
 
 /* ==========================================================================
-   PRACTICE MODE
+   STUDY MODE — spaced repetition (Anki-style)
+   state.srs[id] = { s: 1 learning | 2 review, st: learning step, i: interval (days),
+                     e: ease, r: times graded, w: times answered wrong, d: due (ms), t: last (ms) }
+   No entry = 未学習 (new). state.days["YYYY-MM-DD"] = { n: answered, c: correct, new: new cards }
 ========================================================================== */
 function loadPrefs() {
-  return Object.assign({ view: "SINGLE", shuffle: false, examType: "full" }, lsGet(PREFS_KEY) || {});
+  return Object.assign({ examType: "full", cat: "ALL", mode: "auto" }, lsGet(PREFS_KEY) || {});
 }
 function savePrefs() { lsSet(PREFS_KEY, prefs); }
 
 let prefs = loadPrefs();
 let appMode = "PRACTICE";
-let currentFilter = "ALL";
-let currentMode = "ALL";
-let searchTerm = "";
-let sessionList = [];
-let singleIndex = 0;
+let study = null;          // running study session
 
-function isAnswered(q) { return state.answers[q.id] !== undefined; }
-function matchesSearch(q) {
-  if (!searchTerm) return true;
-  return [q.question, q.category, ...q.options, q.explanation.overview, ...(q.explanation.details || [])].join("\n").toLowerCase().includes(searchTerm);
+const MIN = 60000, DAY = 86400000, DAY_START_H = 4;   // a study "day" rolls over at 4:00
+const LEARN_STEPS = [1 * MIN, 10 * MIN];
+const MATURE_DAYS = 21;                                // interval ≥ 21 days = 習得
+const LEVELS = { new: "未学習", learning: "学習中", young: "定着中", mastered: "習得" };
+const LEVEL_ORDER = ["mastered", "young", "learning", "new"];
+
+function dayKey(t) {
+  const d = new Date((t || Date.now()) - DAY_START_H * 3600000);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+function endOfToday() {
+  const d = new Date(Date.now() - DAY_START_H * 3600000);
+  d.setHours(24 + DAY_START_H, 0, 0, 0);
+  return d.getTime();
+}
+function card(id) { return state.srs[id]; }
+function level(id) {
+  const c = state.srs[id];
+  if (!c) return "new";
+  if (c.s !== 2) return "learning";
+  return c.i >= MATURE_DAYS ? "mastered" : "young";
+}
+function isDue(id, eod) { const c = state.srs[id]; return Boolean(c) && c.d <= eod; }
+/* 苦手 = missed at least once and not yet remembered well */
+function isWeak(id) { const c = state.srs[id]; return Boolean(c) && c.w > 0 && (c.s !== 2 || c.i < 7); }
+/* Priority: how often it was missed + how far it still is from being remembered */
+function weakness(id) {
+  const c = state.srs[id];
+  if (!c) return 0;
+  const w = c.w || 0;
+  return w * 1.5 + (w / Math.max(1, c.r || 1)) * 2 + (c.s !== 2 ? 1 : 0) + Math.max(0, 1 - (c.i || 0) / MATURE_DAYS);
 }
 
-function rebuildSession() {
-  let list = BANK.filter(q => {
-    if (currentFilter !== "ALL" && q.category !== currentFilter) return false;
-    if (currentMode === "UNANSWERED" && isAnswered(q)) return false;
-    if (currentMode === "MISTAKES" && !state.mistakes[q.id]) return false;
-    if (currentMode === "BOOKMARKS" && !state.bookmarks[q.id]) return false;
-    return matchesSearch(q);
-  });
-  if (prefs.shuffle) list = shuffled(list);
-  sessionList = list;
-  singleIndex = 0;
-  render();
+/* Schedule after a grade: 1 = とても難しい/もう一度, 2 = 難しい, 3 = 普通, 4 = 簡単 */
+function nextCard(prev, g, now) {
+  const c = prev ? Object.assign({}, prev) : { s: 1, st: 0, i: 0, e: 2.5, r: 0, w: 0 };
+  c.r = (c.r || 0) + 1; c.t = now;
+  const setIvl = days => { c.s = 2; c.st = 0; c.i = Math.round(Math.min(3650, Math.max(1, days)) * 10) / 10; c.d = now + c.i * DAY; };
+  if (c.s !== 2) {                      // new / (re)learning: short steps, then graduate
+    if (g === 1) { c.st = 0; c.d = now + LEARN_STEPS[0]; }
+    else if (g === 2) c.d = now + (c.st === 0 ? 6 * MIN : LEARN_STEPS[c.st]);
+    else if (g === 3) {
+      if (c.st + 1 < LEARN_STEPS.length) { c.st++; c.d = now + LEARN_STEPS[c.st]; }
+      else setIvl(c.i || 1);
+    } else setIvl(Math.max(4, (c.i || 0) * 1.5));
+  } else {                              // review
+    const ivl = c.i;
+    if (g === 1) { c.e = Math.max(1.3, c.e - 0.2); c.i = Math.max(1, Math.round(ivl * 0.3 * 10) / 10); c.s = 1; c.st = LEARN_STEPS.length - 1; c.d = now + LEARN_STEPS[c.st]; }
+    else if (g === 2) { c.e = Math.max(1.3, c.e - 0.15); setIvl(Math.max(ivl + 1, ivl * 1.2)); }
+    else if (g === 3) setIvl(Math.max(ivl + 1, ivl * c.e));
+    else { c.e += 0.15; setIvl(Math.max(ivl + 2, ivl * c.e * 1.3)); }
+  }
+  c.e = Math.round(c.e * 100) / 100;
+  return c;
+}
+/* A wrong answer in a mock exam: due again now, counted as a miss */
+function markMissed(id) {
+  const now = Date.now();
+  const c = state.srs[id] ? Object.assign({}, state.srs[id]) : { s: 1, st: 0, i: 0, e: 2.5, r: 0, w: 0 };
+  c.w = (c.w || 0) + 1;
+  if (c.s === 2) { c.e = Math.max(1.3, c.e - 0.2); c.i = Math.max(1, Math.round(c.i * 0.3 * 10) / 10); c.s = 1; c.st = LEARN_STEPS.length - 1; }
+  c.d = now; c.t = now;
+  state.srs[id] = c;
+}
+function fmtIvl(ms) {
+  const m = ms / MIN;
+  if (m < 1) return "1分未満";
+  if (m < 60) return Math.round(m) + "分";
+  if (m < 1440) return Math.round(m / 60) + "時間";
+  const d = ms / DAY;
+  if (d < 30) return Math.round(d) + "日";
+  if (d < 365) return (Math.round(d / 30 * 10) / 10) + "ヶ月";
+  return (Math.round(d / 365 * 10) / 10) + "年";
 }
 
-function renderCategories() {
-  const container = document.getElementById("category-filters");
-  container.querySelectorAll(".btn-filter").forEach(el => el.remove());
+function logDay(correct, isNew) {
+  const k = dayKey();
+  const d = state.days[k] || (state.days[k] = { n: 0, c: 0, new: 0 });
+  d.n++; if (correct) d.c++; if (isNew) d.new++;
+  const keys = Object.keys(state.days).sort();
+  while (keys.length > 120) delete state.days[keys.shift()];
+}
+const NEW_PER_DAY = 20;   // new questions per day in おすすめ (Anki's default)
+function newLeftToday() { const d = state.days[dayKey()]; return Math.max(0, NEW_PER_DAY - (d ? d.new || 0 : 0)); }
+function streak() {
+  let n = 0, t = Date.now();
+  if (!state.days[dayKey(t)]) t -= DAY;          // not studied yet today: count up to yesterday
+  while (state.days[dayKey(t)]) { n++; t -= DAY; }
+  return n;
+}
+
+function isAnswered(q) { return state.answers[q.id] !== undefined || Boolean(state.srs[q.id]); }
+function studyPool() { return BANK.filter(q => prefs.cat === "ALL" || q.category === prefs.cat).map(q => q.id); }
+
+/* Cards a session starts with (Anki-style):
+   main  = cards to go through once (reviews due today mixed with today's new cards, or the chosen mode's cards)
+   learn = cards in short-step learning; each comes back when its step (1分/10分) is due */
+function planStudy(mode) {
+  const pool = studyPool(), eod = endOfToday();
+  if (mode === "auto") {
+    const learn = pool.filter(id => { const c = card(id); return c && c.s !== 2 && c.d <= eod; });
+    const rev = pool.filter(id => { const c = card(id); return c && c.s === 2 && c.d <= eod; }).sort((a, b) => weakness(b) - weakness(a));
+    const fresh = shuffled(pool.filter(id => !card(id))).slice(0, newLeftToday());
+    const main = [];
+    let r = 0, f = 0;
+    while (r < rev.length || f < fresh.length) {        // 3 reviews, then 1 new
+      for (let k = 0; k < 3 && r < rev.length; k++) main.push(rev[r++]);
+      if (f < fresh.length) main.push(fresh[f++]);
+    }
+    return { main, learn };
+  }
+  if (mode === "weak") return { main: pool.filter(id => card(id) && weakness(id) > 0.05).sort((a, b) => weakness(b) - weakness(a)), learn: [] };
+  if (mode === "new") return { main: shuffled(pool.filter(id => !card(id))), learn: [] };
+  return { main: shuffled(pool), learn: [] };
+}
+function planSize(p) { return p.main.length + p.learn.length; }
+
+function levelCounts(ids) {
+  const n = { new: 0, learning: 0, young: 0, mastered: 0 };
+  ids.forEach(id => n[level(id)]++);
+  return n;
+}
+function lvBarHtml(n, total) {
+  return `<div class="lv-bar">${LEVEL_ORDER.filter(l => l !== "new").map(l => n[l] ? `<span class="lv-${l}" style="width:${n[l] / total * 100}%"></span>` : "").join("")}</div>`;
+}
+
+function renderStudyMenu() {
+  const el = document.getElementById("study-menu");
+  if (!BANK.length) { el.innerHTML = `<div class="empty-state">問題がまだ登録されていません。</div>`; return; }
+  const eod = endOfToday();
+  const all = BANK.map(q => q.id);
+  const today = state.days[dayKey()] || { n: 0, c: 0 };
+  const tried = all.filter(id => state.answers[id] !== undefined);
+  const acc = tried.length ? tried.filter(id => state.answers[id] === byId.get(id).answer).length / tried.length : null;
+  const weakN = all.filter(isWeak).length;
+  const tomorrow = all.filter(id => { const c = card(id); return c && c.d > eod && c.d <= eod + DAY; }).length;
+  const n = levelCounts(all);
   const extra = [...new Set(BANK.map(q => q.category))].filter(c => !SUBJECT_NAMES.includes(c));
-  ["ALL", ...SUBJECT_NAMES, ...extra].forEach(cat => {
-    const qs = cat === "ALL" ? BANK : BANK.filter(q => q.category === cat);
-    const btn = document.createElement("button");
-    btn.className = "btn-filter" + (cat === currentFilter ? " active" : "");
-    btn.innerHTML = `${escapeHtml(cat === "ALL" ? "すべて" : cat)}<span class="count">${qs.filter(isAnswered).length}/${qs.length}</span>`;
-    btn.onclick = () => { currentFilter = cat; renderCategories(); rebuildSession(); };
-    container.appendChild(btn);
-  });
-}
-function syncControlStates() {
-  document.querySelectorAll("#mode-filters [data-mode]").forEach(b => b.classList.toggle("active", b.dataset.mode === currentMode));
-  document.querySelectorAll("#view-filters [data-view]").forEach(b => b.classList.toggle("active", b.dataset.view === prefs.view));
-  document.getElementById("btn-shuffle").classList.toggle("active", prefs.shuffle);
-}
+  const cats = [...SUBJECT_NAMES, ...extra];
+  if (prefs.cat !== "ALL" && !cats.includes(prefs.cat)) prefs.cat = "ALL";
+  if (!["auto", "weak", "new", "random"].includes(prefs.mode)) prefs.mode = "auto";
 
-function render() {
-  syncControlStates();
-  const container = document.getElementById("question-list");
-  container.innerHTML = "";
-  if (!sessionList.length) {
-    const msg = {
-      MISTAKES: "「要復習」に登録された問題はありません。",
-      BOOKMARKS: "ブックマークした問題はありません。問題右上の ☆ で追加できます。",
-      UNANSWERED: "未回答の問題はありません。お疲れさまでした！"
-    }[currentMode] || "該当する問題がありません。";
-    container.innerHTML = `<div class="empty-state"><p>${msg}</p></div>`;
-    return;
+  // Start button: in おすすめ, once today's cards are done it offers more new questions instead.
+  let startMode = prefs.mode, label = "学習を始める";
+  if (!planSize(planStudy(prefs.mode))) {
+    if (prefs.mode === "auto" && planSize(planStudy("new"))) { startMode = "new"; label = "今日の復習は完了 ― 新しい問題を解く"; }
+    else startMode = null;
   }
-  if (prefs.view === "SINGLE") {
-    if (singleIndex >= sessionList.length) singleIndex = sessionList.length - 1;
-    container.appendChild(buildNav());
-    const hint = document.createElement("div");
-    hint.className = "kbd-hint";
-    hint.textContent = "キーボード：1〜4で回答 / ← → で移動";
-    container.appendChild(hint);
-    container.appendChild(buildCard(sessionList[singleIndex], singleIndex + 1));
-    container.appendChild(buildNav());
-  } else {
-    sessionList.forEach((q, i) => container.appendChild(buildCard(q, i + 1)));
-  }
-}
+  if (!startMode) label = prefs.mode === "weak" ? "苦手な問題はありません" : prefs.mode === "new" ? "未学習の問題はありません" : "今日の学習は完了しました 🎉";
 
-function buildNav() {
-  const row = document.createElement("div");
-  row.className = "nav-row";
-  row.innerHTML = `
-    <button class="btn-nav" data-act="prev" ${singleIndex === 0 ? "disabled" : ""}>← 前へ</button>
-    <span class="nav-pos">${singleIndex + 1} / ${sessionList.length}</span>
-    <button class="btn-nav" data-act="next" ${singleIndex >= sessionList.length - 1 ? "disabled" : ""}>次へ →</button>`;
-  row.querySelector('[data-act="prev"]').onclick = () => goTo(singleIndex - 1);
-  row.querySelector('[data-act="next"]').onclick = () => goTo(singleIndex + 1);
-  return row;
-}
-function goTo(i) {
-  if (i < 0 || i >= sessionList.length) return;
-  singleIndex = i;
-  render();
-  window.scrollTo({ top: document.getElementById("question-list").offsetTop - 12, behavior: "smooth" });
-}
+  const modes = [["auto", "おすすめ"], ["weak", "苦手を優先"], ["new", "未学習のみ"], ["random", "ランダム"]];
+  const chip = (attr, val, text, on) => `<button class="btn-filter ${on ? "active" : ""}" data-${attr}="${escapeHtml(val)}">${text}</button>`;
 
-function buildCard(q, displayNum) {
-  const card = document.createElement("div");
-  card.className = "question-card";
-  card.id = `q-${q.id}`;
-  fillCard(card, q, displayNum);
-  return card;
+  const statsHtml = `
+    <div class="card">
+      <div class="tiles">
+        <div class="tile"><span class="tile-val">${today.n}<small>問</small></span><span class="tile-label">今日の学習</span></div>
+        <div class="tile"><span class="tile-val">${streak()}<small>日</small></span><span class="tile-label">連続学習</span></div>
+        <div class="tile"><span class="tile-val">${acc === null ? "-" : pct(acc)}</span><span class="tile-label">正答率</span></div>
+        <div class="tile"><span class="tile-val" style="color:var(--danger)">${weakN}<small>問</small></span><span class="tile-label">苦手</span></div>
+      </div>
+    </div>`;
+  const startHtml = `
+    <div class="card">
+      <div class="section-title">学習する</div>
+      <div class="menu-opts">
+        <div class="filter-group"><span class="filter-label">科目</span>${chip("cat", "ALL", "すべて", prefs.cat === "ALL")}${cats.map(c => chip("cat", c, escapeHtml(c), prefs.cat === c)).join("")}</div>
+        <div class="filter-group"><span class="filter-label">出題</span>${modes.map(([v, t]) => chip("mode", v, t, prefs.mode === v)).join("")}</div>
+      </div>
+      <button class="btn-primary" id="btn-start-study" ${startMode ? "" : "disabled"}>${label}</button>
+    </div>`;
+  const levelsHtml = `
+    <div class="card">
+      <div class="section-title">記憶の定着度</div>
+      ${lvBarHtml(n, all.length)}
+      <div class="lv-legend">${LEVEL_ORDER.map(l => `<span><span class="lv-dot lv-${l}"></span> ${LEVELS[l]} <b>${n[l]}</b></span>`).join("")}</div>
+      ${cats.map(cat => {
+        const ids = BANK.filter(q => q.category === cat).map(q => q.id);
+        const c = levelCounts(ids);
+        return `<div class="subj-row"><div class="subj-head"><span>${escapeHtml(cat)}</span><span>習得 ${c.mastered} ・ 学習済 ${ids.length - c.new} / ${ids.length}</span></div>${lvBarHtml(c, ids.length)}</div>`;
+      }).join("")}
+      <div class="note">明日の復習予定：${tomorrow}問　／　習得 ＝ 復習間隔が${MATURE_DAYS}日以上になった問題</div>
+    </div>`;
+  el.innerHTML = statsHtml + startHtml + levelsHtml;   // start button near the top on phones
+
+  el.querySelectorAll("[data-cat]").forEach(b => b.onclick = () => { prefs.cat = b.dataset.cat; savePrefs(); renderStudyMenu(); });
+  el.querySelectorAll("[data-mode]").forEach(b => b.onclick = () => { prefs.mode = b.dataset.mode; savePrefs(); renderStudyMenu(); });
+  document.getElementById("btn-start-study").onclick = () => { if (startMode) startStudy(planStudy(startMode)); };
 }
 
 /* Shared explanation block (practice + exam review) */
-function explanationHtml(q, userAns, extraActions) {
+/* Choices are shown in a shuffled order. `order` = original option indexes in display order;
+   answers are always stored as the ORIGINAL index (q.answer, taboo, details stay as in the data). */
+function optionOrder(q) { return shuffled(q.options.map((_, i) => i)); }
+function validOrder(q, order) {
+  return Array.isArray(order) && order.length === q.options.length && order.slice().sort().every((v, i) => v === i) ? order : q.options.map((_, i) => i);
+}
+function choiceButtonsHtml(q, order, chosen) {
+  return validOrder(q, order).map((idx, pos) =>
+    `<button class="option-btn ${chosen === idx ? "chosen" : ""}" data-opt="${idx}"><span class="opt-num">${pos + 1}</span><span class="opt-body">${fmt(q.options[idx])}</span></button>`).join("");
+}
+function explanationHtml(q, userAns, extraActions, order) {
   const correct = userAns === q.answer;
-  const details = Array.isArray(q.explanation.details) ? q.explanation.details : [];
+  const shownNo = validOrder(q, order).indexOf(q.answer) + 1;
   const title = userAns === undefined
-    ? `<div class="exp-title exp-wrong">未回答（正解は選択肢 ${q.answer + 1}）</div>`
+    ? `<div class="exp-title exp-wrong">未回答（正解は選択肢 ${shownNo}）</div>`
     : correct ? `<div class="exp-title exp-correct">⭕ 正解！</div>`
-              : `<div class="exp-title exp-wrong">❌ 不正解（正解は選択肢 ${q.answer + 1}）</div>`;
+              : `<div class="exp-title exp-wrong">❌ 不正解（正解は選択肢 ${shownNo}）</div>`;
   return `
     <div class="explanation-box">
       ${title}
@@ -758,14 +912,14 @@ function explanationHtml(q, userAns, extraActions) {
     </div>`;
 }
 /* Answered state: options keep their red/green colouring and each one shows its own explanation underneath. */
-function revealedOptionsHtml(q, userAns) {
+function revealedOptionsHtml(q, userAns, order) {
   const details = Array.isArray(q.explanation.details) ? q.explanation.details : [];
-  return q.options.map((opt, idx) => {
+  return validOrder(q, order).map((idx, pos) => {
     let cls = "option-btn";
     if (userAns === idx) cls += userAns === q.answer ? " selected-correct" : " selected-wrong";
     else if (idx === q.answer) cls += " reveal-correct";
     const note = details[idx] ? `<span class="opt-note">${fmt(details[idx])}</span>` : "";
-    return `<button class="${cls}" disabled><span class="opt-num">${idx + 1}</span><span class="opt-body">${fmt(opt)}${tabooBadge(q, idx)}${note}</span></button>`;
+    return `<button class="${cls}" disabled><span class="opt-num">${pos + 1}</span><span class="opt-body">${fmt(q.options[idx])}${tabooBadge(q, idx)}${note}</span></button>`;
   }).join("");
 }
 
@@ -815,74 +969,147 @@ function renderBooks() {
     : `<div class="empty-state">リンクはまだ登録されていません。</div>`;
 }
 
-function fillCard(card, q, displayNum) {
-  card.dataset.num = displayNum;
-  const userAns = state.answers[q.id];
-  const answered = userAns !== undefined;
-  const correct = answered && userAns === q.answer;
-  const bookmarked = Boolean(state.bookmarks[q.id]);
-  const status = !answered ? `<span class="q-status status-unanswered">未回答</span>`
-    : correct ? `<span class="q-status status-correct">正解</span>` : `<span class="q-status status-wrong">不正解</span>`;
+/* ---------- Study session screen (Anki-style: one card at a time, saved after every answer) ---------- */
+const LEARN_AHEAD = 20 * MIN;   // when nothing else is left, a learning card may come back up to 20分 early
 
-  card.innerHTML = `
-    <div class="q-meta">
-      <div class="q-meta-left"><span class="q-num">第 ${displayNum} 問</span><span class="q-category">${escapeHtml(q.category)}</span></div>
-      <div class="q-meta-right">${status}<button class="btn-bookmark ${bookmarked ? "on" : ""}" data-act="bookmark" aria-label="ブックマーク">${bookmarked ? "★" : "☆"}</button></div>
-    </div>
-    <div class="q-text">${fmt(q.question)}</div>
-    <div class="options-grid">
-      ${answered ? revealedOptionsHtml(q, userAns) : q.options.map((opt, idx) =>
-        `<button class="option-btn" data-opt="${idx}"><span class="opt-num">${idx + 1}</span><span class="opt-body">${fmt(opt)}</span></button>`).join("")}
-    </div>
-    ${answered ? explanationHtml(q, userAns, `
-      <div class="card-actions">
-        <button class="btn-small" data-act="retry">↺ もう一度解く</button>
-        <button class="btn-small" data-act="mistake">${state.mistakes[q.id] ? "✅ 要復習から外す" : "⚠️ 要復習に追加"}</button>
-      </div>`) : ""}
-  `;
-  card.querySelectorAll("[data-opt]").forEach(btn => { btn.onclick = () => handleAnswer(q, Number(btn.dataset.opt), card); });
-  card.querySelector('[data-act="bookmark"]').onclick = () => {
-    if (state.bookmarks[q.id]) delete state.bookmarks[q.id]; else state.bookmarks[q.id] = true;
-    commit(card, q);
-  };
-  const retry = card.querySelector('[data-act="retry"]');
-  if (retry) retry.onclick = () => { delete state.answers[q.id]; commit(card, q); };
-  const mk = card.querySelector('[data-act="mistake"]');
-  if (mk) mk.onclick = () => { if (state.mistakes[q.id]) delete state.mistakes[q.id]; else state.mistakes[q.id] = true; commit(card, q); };
+function startStudy(plan) {
+  const main = (plan.main || []).filter(id => byId.has(id));
+  const learn = (plan.learn || []).filter(id => byId.has(id) && !main.includes(id));
+  if (!main.length && !learn.length) return;
+  study = { main, learn, current: null, last: null, answered: null, done: 0, correct: 0, unique: new Set() };
+  study.current = pickNext();
+  document.getElementById("app-main").classList.add("hidden");
+  document.getElementById("study").classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+  renderStudy(true);
 }
-
-function commit(card, q) {
-  saveState();
-  fillCard(card, q, card.dataset.num);
-  updateStats();
-  renderCategories();
+/* Next card: a learning card whose step is due → the next main card → a learning card due soon (learn ahead). */
+function pickNext() {
+  const now = Date.now();
+  study.learn.sort((a, b) => card(a).d - card(b).d);
+  const dueLearn = study.learn.findIndex(id => card(id).d <= now && (id !== study.last || !study.main.length));
+  if (dueLearn >= 0) return study.learn.splice(dueLearn, 1)[0];
+  if (study.main.length) return study.main.shift();
+  if (study.learn.length && card(study.learn[0]).d <= now + LEARN_AHEAD) return study.learn.shift();
+  return null;
 }
-function handleAnswer(q, idx, card) {
-  if (isAnswered(q)) return;
-  state.answers[q.id] = idx;
-  if (idx === q.answer) delete state.mistakes[q.id]; else state.mistakes[q.id] = true;
-  commit(card, q);
-  const box = card.querySelector(".explanation-box");
-  if (box && box.getBoundingClientRect().top > window.innerHeight - 80) box.scrollIntoView({ behavior: "smooth", block: "nearest" });
-}
-
-function updateStats() {
-  const s = computeSummary();
-  const bookmarks = BANK.filter(q => state.bookmarks[q.id]).length;
-  document.getElementById("stat-total").textContent = s.total;
-  document.getElementById("stat-answered").textContent = `${s.answered}/${s.total}`;
-  document.getElementById("stat-rate").textContent = s.answered ? pct(s.correct / s.answered) : "-";
-  document.getElementById("stat-mistakes").textContent = s.mistakes;
-  document.getElementById("mistake-count-badge").textContent = s.mistakes;
-  document.getElementById("bookmark-count-badge").textContent = bookmarks;
-  document.getElementById("bar-correct").style.width = s.total ? `${s.correct / s.total * 100}%` : "0%";
-  document.getElementById("bar-wrong").style.width = s.total ? `${(s.answered - s.correct) / s.total * 100}%` : "0%";
-}
-function resetAllProgress() {
-  if (confirm("学習モードの全履歴・要復習リスト・ブックマークをリセットしますか？\n（模擬試験の受験記録は残ります）")) {
-    state = { answers: {}, mistakes: {}, bookmarks: {} };
-    saveState(); renderCategories(); updateStats(); rebuildSession();
+function closeStudy() {
+  if (!study) return;
+  if (study.answered !== null && study.current !== null) {   // answered but not graded yet → default grade
+    const q = byId.get(study.current);
+    gradeStudy(study.answered === q.answer ? 3 : 1, true);
   }
+  study = null;
+  document.getElementById("study").classList.add("hidden");
+  document.getElementById("app-main").classList.remove("hidden");
+  document.body.style.overflow = "";
+  if (appMode === "PRACTICE") renderStudyMenu();
+  else if (appMode === "BROWSE") renderBrowse();
+  window.scrollTo(0, 0);
+}
+
+function renderStudy(newCard) {
+  const body = document.getElementById("study-body");
+  const bottom = document.getElementById("study-bottom");
+
+  if (study.current === null) {
+    const eod = endOfToday();
+    const tomorrow = BANK.filter(q => { const c = card(q.id); return c && c.d > eod && c.d <= eod + DAY; }).length;
+    const laterToday = study.learn.length;
+    const moreNew = studyPool().some(id => !card(id));
+    body.innerHTML = `<div class="study-done">
+      <div class="big">🎉</div><div class="title">おつかれさまでした</div>
+      <div class="sub">${study.unique.size}問・正解率 ${study.done ? pct(study.correct / study.done) : "-"}</div>
+      <div class="note">${laterToday ? `学習中の問題は少し時間をおいてまた出題されます。<br>` : ""}明日の復習予定：${tomorrow}問</div>
+      ${laterToday ? `<button class="btn-secondary" id="study-wait" style="margin-top:10px">学習中の問題を今すぐ解く</button>` : ""}
+      ${moreNew ? `<button class="btn-secondary" id="study-more" style="margin-top:${laterToday ? 0 : 10}px">新しい問題を続ける</button>` : ""}
+      <button class="btn-primary" id="study-back">メニューに戻る</button></div>`;
+    bottom.classList.add("hidden");
+    document.getElementById("study-back").onclick = closeStudy;
+    const w = document.getElementById("study-wait");
+    if (w) w.onclick = () => { study.current = study.learn.shift(); renderStudy(true); };
+    const m = document.getElementById("study-more");
+    if (m) m.onclick = () => { study.main = planStudy("new").main.filter(id => !study.learn.includes(id)); study.current = pickNext(); renderStudy(true); };
+    body.scrollTop = 0;
+    return;
+  }
+
+  const id = study.current, q = byId.get(id), a = study.answered, c = card(id), lv = level(id);
+  if (newCard || !study.order || study.order.length !== q.options.length) study.order = optionOrder(q);   // new shuffle each time a card comes up
+  body.innerHTML = `<div class="study-card">
+    <div class="study-meta"><span class="q-category">${escapeHtml(q.category)}</span>
+      <span class="lv-tag"><span class="lv-dot lv-${lv}"></span>${LEVELS[lv]}</span>
+      ${c && c.w ? `<span class="miss-tag">×${c.w} ミス</span>` : ""}</div>
+    <div class="q-text">${fmt(q.question)}</div>
+    <div class="options-grid">${a === null
+      ? choiceButtonsHtml(q, study.order)
+      : revealedOptionsHtml(q, a, study.order)}</div>
+    ${a === null ? "" : explanationHtml(q, a, "", study.order)}
+  </div>`;
+  body.querySelectorAll("[data-opt]").forEach(b => b.onclick = () => answerStudy(Number(b.dataset.opt)));
+  if (newCard) body.scrollTop = 0;
+
+  if (a === null) { bottom.classList.add("hidden"); bottom.innerHTML = ""; return; }
+  const correct = a === q.answer, now = Date.now();
+  const grades = correct ? [[1, "とても難しい"], [2, "難しい"], [3, "普通"], [4, "簡単"]] : [[1, "もう一度"]];
+  bottom.classList.remove("hidden");
+  bottom.classList.toggle("single", !correct);
+  bottom.innerHTML = grades.map(([g, label]) =>
+    `<button class="grade g${g}" data-g="${g}"><span class="g-label">${label}</span><span class="g-ivl">${fmtIvl(nextCard(c, g, now).d - now)}後</span></button>`).join("");
+  bottom.querySelectorAll("[data-g]").forEach(b => b.onclick = () => gradeStudy(Number(b.dataset.g)));
+}
+
+function answerStudy(idx) {
+  if (!study || study.answered !== null || study.current === null) return;
+  study.answered = idx;
+  state.answers[study.current] = idx;
+  saveState();
+  renderStudy(false);
+  const box = document.querySelector("#study-body .explanation-box");
+  const body = document.getElementById("study-body");
+  if (box && box.getBoundingClientRect().top > body.getBoundingClientRect().bottom - 60) box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function gradeStudy(g, silent) {
+  if (!study || study.answered === null || study.current === null) return;
+  const id = study.current, q = byId.get(id);
+  const correct = study.answered === q.answer;
+  const wasNew = !card(id);
+  const c = nextCard(card(id), g, Date.now());
+  if (!correct) c.w = (c.w || 0) + 1;
+  state.srs[id] = c;
+  logDay(correct, wasNew);
+  study.answered = null; study.done++; study.unique.add(id); study.last = id;
+  if (correct) study.correct++;
+  if (c.s !== 2 && !study.learn.includes(id)) study.learn.push(id);   // still learning → comes back when its step is due
+  saveState();
+  if (silent) return;
+  study.current = pickNext();
+  renderStudy(true);
+}
+
+function resetProgressDialog() {
+  const extra = [...new Set(BANK.map(q => q.category))].filter(c => !SUBJECT_NAMES.includes(c));
+  const cats = [...SUBJECT_NAMES, ...extra];
+  openModal(`<div class="modal-title">学習記録をリセット</div>
+    <p class="note" style="margin-top:4px">選んだ範囲の回答・復習スケジュール・ミス回数を消して「未学習」に戻します。模擬試験の受験記録は残ります。</p>
+    <div class="filter-group" style="margin-top:12px">
+      <button class="btn-filter active" data-rcat="ALL">すべて</button>
+      ${cats.map(c => `<button class="btn-filter" data-rcat="${escapeHtml(c)}">${escapeHtml(c)}</button>`).join("")}
+    </div>
+    <div class="modal-actions"><button class="btn-secondary" id="rs-cancel">キャンセル</button><button class="btn-primary" id="rs-ok" style="background:var(--danger)">リセット</button></div>`);
+  let sel = "ALL";
+  document.querySelectorAll("[data-rcat]").forEach(b => b.onclick = () => {
+    sel = b.dataset.rcat;
+    document.querySelectorAll("[data-rcat]").forEach(x => x.classList.toggle("active", x === b));
+  });
+  document.getElementById("rs-cancel").onclick = closeModal;
+  document.getElementById("rs-ok").onclick = () => {
+    const label = sel === "ALL" ? "すべての科目" : sel;
+    if (!confirm(`${label}の学習記録をリセットします。元に戻せません。よろしいですか？`)) return;
+    BANK.filter(q => sel === "ALL" || q.category === sel).forEach(q => { delete state.srs[q.id]; delete state.answers[q.id]; });
+    saveState(); closeModal(); renderStudyMenu();
+  };
 }
 
 /* ==========================================================================
@@ -915,7 +1142,7 @@ function setAppMode(mode) {
   document.getElementById("browse-view").classList.toggle("hidden", mode !== "BROWSE");
   document.getElementById("books-view").classList.toggle("hidden", mode !== "BOOKS");
   document.getElementById("btn-top").classList.remove("show");
-  if (mode === "PRACTICE") { renderCategories(); updateStats(); render(); }
+  if (mode === "PRACTICE") renderStudyMenu();
   if (mode === "EXAM") renderExamStart();
   if (mode === "BROWSE") renderBrowse();
   if (mode === "BOOKS") renderBooks();
@@ -987,7 +1214,8 @@ function startExam() {
   plan.forEach(p => shuffled(BANK.filter(q => q.category === p.name)).slice(0, p.take).forEach(q => ids.push(q.id)));
   if (!ids.length) return;
   const now = Date.now();
-  exam = { type, ids, answers: {}, flags: {}, current: 0, startAt: now, endAt: now + examMinutes(ids.length) * 60000 };
+  exam = { type, ids, answers: {}, flags: {}, current: 0, startAt: now, endAt: now + examMinutes(ids.length) * 60000,
+           orders: ids.map(id => optionOrder(byId.get(id))) };   // choice order fixed for the whole exam (and its review)
   persistExam();
   openCbt();
 }
@@ -1038,7 +1266,7 @@ function renderCbt() {
       <div class="q-meta"><div class="q-meta-left"><span class="q-num">第 ${i + 1} 問</span><span class="q-category">${escapeHtml(q.category)}</span></div></div>
       <div class="q-text">${fmt(q.question)}</div>
       <div class="options-grid">
-        ${q.options.map((opt, idx) => `<button class="option-btn ${chosen === idx ? "chosen" : ""}" data-opt="${idx}"><span class="opt-num">${idx + 1}</span><span class="opt-body">${fmt(opt)}</span></button>`).join("")}
+        ${choiceButtonsHtml(q, exam.orders && exam.orders[i], chosen)}
       </div>
     </div>`;
   body.querySelectorAll("[data-opt]").forEach(b => b.onclick = () => chooseExamOption(Number(b.dataset.opt)));
@@ -1114,7 +1342,7 @@ function scoreExam(ex) {
   used.forEach(s => { if (s.correct / s.total < CFG.passSubject) reasons.push(`${s.name} が科目別基準 ${pct(CFG.passSubject)} を下回っています`); });
   if (tabooHits.length >= CFG.tabooFailCount) reasons.push(`禁忌肢を ${tabooHits.length} 問で選択しました`);
   return {
-    type: ex.type, ids: ex.ids, answers: ex.answers, correct, total, subjects: used, tabooHits, reasons,
+    type: ex.type, ids: ex.ids, answers: ex.answers, orders: ex.orders, correct, total, subjects: used, tabooHits, reasons,
     pass: reasons.length === 0,
     minutesUsed: Math.round((Math.min(Date.now(), ex.endAt) - ex.startAt) / 60000)
   };
@@ -1123,9 +1351,9 @@ function scoreExam(ex) {
 function finishExam(timeUp) {
   if (!exam) return;
   const result = scoreExam(exam);
-  // wrong answers in the mock exam go to the 要復習 list
+  // wrong answers in the mock exam count as misses and come back in today's review
   let changed = false;
-  result.ids.forEach((id, i) => { if (result.answers[i] !== byId.get(id).answer && !state.mistakes[id]) { state.mistakes[id] = true; changed = true; } });
+  result.ids.forEach((id, i) => { if (result.answers[i] !== byId.get(id).answer) { markMissed(id); changed = true; } });
   if (changed) saveState();
 
   lastResult = result;
@@ -1172,7 +1400,7 @@ function renderResult(timeUp) {
 
     <div class="card result-actions">
       <button class="btn-primary" id="res-retake">もう一度受験する</button>
-      <button class="btn-secondary" id="res-practice">学習モードで要復習を解く</button>
+      ${r.ids.some((id, i) => r.answers[i] !== byId.get(id).answer) ? `<button class="btn-secondary" id="res-practice">間違えた問題を復習する</button>` : ""}
     </div>
 
     <div class="card controls" style="flex-direction:row;align-items:center;justify-content:space-between">
@@ -1187,12 +1415,13 @@ function renderResult(timeUp) {
         <div class="q-meta"><div class="q-meta-left"><span class="q-num">第 ${i + 1} 問</span><span class="q-category">${escapeHtml(q.category)}</span></div>
           <span class="q-status ${a === q.answer ? "status-correct" : "status-wrong"}">${a === undefined ? "未解答" : a === q.answer ? "正解" : "不正解"}</span></div>
         <div class="q-text">${fmt(q.question)}</div>
-        <div class="options-grid">${revealedOptionsHtml(q, a)}</div>
-        ${explanationHtml(q, a)}
+        <div class="options-grid">${revealedOptionsHtml(q, a, r.orders && r.orders[i])}</div>
+        ${explanationHtml(q, a, "", r.orders && r.orders[i])}
       </div>`).join("") : `<div class="empty-state">全問正解です！</div>`}
   `;
   document.getElementById("res-retake").onclick = () => setAppMode("EXAM");
-  document.getElementById("res-practice").onclick = () => { currentMode = "MISTAKES"; currentFilter = "ALL"; setAppMode("PRACTICE"); rebuildSession(); };
+  const rp = document.getElementById("res-practice");
+  if (rp) rp.onclick = () => { setAppMode("PRACTICE"); startStudy({ main: r.ids.filter((id, i) => r.answers[i] !== byId.get(id).answer) }); };
   el.querySelectorAll("[data-rv]").forEach(b => b.onclick = () => { reviewWrongOnly = b.dataset.rv === "wrong"; renderResult(false); });
 }
 
@@ -1214,6 +1443,7 @@ function maybeResumeExam() {
 ========================================================================== */
 let browseFilter = "ALL";
 let browseSearch = "";
+let browseLevel = "ALL";
 
 function renderBrowse() {
   const cats = document.getElementById("browse-cats");
@@ -1229,9 +1459,20 @@ function renderBrowse() {
     cats.appendChild(b);
   });
 
+  const lvBox = document.getElementById("browse-lv");
+  lvBox.querySelectorAll(".btn-filter").forEach(b => b.remove());
+  [["ALL", "すべて"], ["weak", "苦手"], ["new", "未学習"], ["learning", "学習中"], ["young", "定着中"], ["mastered", "習得"]].forEach(([v, label]) => {
+    const b = document.createElement("button");
+    b.className = "btn-filter" + (browseLevel === v ? " active" : "");
+    b.textContent = label;
+    b.onclick = () => { browseLevel = v; renderBrowse(); };
+    lvBox.appendChild(b);
+  });
+
   const term = browseSearch;
-  const matches = q => !term || String(q.id) === term.replace(/^no\.?/, "") ||
-    [q.question, ...q.options, q.explanation.overview, ...(q.explanation.details || [])].join("\n").toLowerCase().includes(term);
+  const lvOk = q => browseLevel === "ALL" || (browseLevel === "weak" ? isWeak(q.id) : level(q.id) === browseLevel);
+  const matches = q => lvOk(q) && (!term || String(q.id) === term.replace(/^no\.?/, "") ||
+    [q.question, ...q.options, q.explanation.overview, ...(q.explanation.details || [])].join("\n").toLowerCase().includes(term));
   const list = document.getElementById("browse-list");
   let html = "";
   (browseFilter === "ALL" ? allCats : [browseFilter]).forEach(cat => {
@@ -1239,11 +1480,11 @@ function renderBrowse() {
     if (!qs.length) return;
     html += `<div class="browse-group-title">${escapeHtml(cat)}（${qs.length}問）</div><div class="b-list">`;
     qs.forEach(q => {
-      const a = state.answers[q.id];
-      const dot = a === undefined ? "" : a === q.answer ? "ok" : "ng";
+      const c = card(q.id);
       html += `<details class="b-item" data-id="${q.id}"><summary>
-        <span class="b-dot ${dot}"></span><span class="b-id">No.${escapeHtml(q.id)}</span>
+        <span class="lv-dot lv-${level(q.id)}" title="${LEVELS[level(q.id)]}"></span><span class="b-id">No.${escapeHtml(q.id)}</span>
         <span class="b-q">${escapeHtml(String(q.question || "").replace(/\s+/g, " "))}</span>
+        ${c && c.w ? `<span class="miss-tag">×${c.w}</span>` : ""}
         ${Array.isArray(q.taboo) && q.taboo.length ? '<span class="taboo-badge">禁忌肢</span>' : ""}
         ${bankErrorsById[q.id] ? '<span class="b-warn" title="データに問題があります">⚠</span>' : ""}
       </summary><div class="b-body"></div></details>`;
@@ -1293,22 +1534,8 @@ function initApp() {
   document.getElementById("exam-title").textContent = CFG.examName + " 対策問題集";
   document.getElementById("exam-subtitle").textContent = `CBT・四肢択一・${FULL_COUNT}問/${CFG.minutes}分　法令等基準日：${CFG.lawBaseDate}`;
   document.querySelectorAll(".tab").forEach(t => t.onclick = () => setAppMode(t.dataset.app));
-  document.querySelectorAll("#mode-filters [data-mode]").forEach(b => b.onclick = () => { currentMode = b.dataset.mode; rebuildSession(); });
-  document.querySelectorAll("#view-filters [data-view]").forEach(b => {
-    b.onclick = () => {
-      if (prefs.view === b.dataset.view) return;
-      const current = prefs.view === "SINGLE" ? sessionList[singleIndex] : null;
-      prefs.view = b.dataset.view; savePrefs(); render();
-      if (current && prefs.view === "LIST") { const el = document.getElementById(`q-${current.id}`); if (el) el.scrollIntoView({ block: "start" }); }
-    };
-  });
-  document.getElementById("btn-shuffle").onclick = () => { prefs.shuffle = !prefs.shuffle; savePrefs(); rebuildSession(); };
-  let t;
-  document.getElementById("search-input").addEventListener("input", e => {
-    clearTimeout(t);
-    t = setTimeout(() => { searchTerm = e.target.value.trim().toLowerCase(); rebuildSession(); }, 200);
-  });
-  document.getElementById("btn-reset").onclick = resetAllProgress;
+  document.getElementById("btn-reset").onclick = resetProgressDialog;
+  document.getElementById("study-close").onclick = closeStudy;
   let bt;
   document.getElementById("browse-search").addEventListener("input", e => {
     clearTimeout(bt);
@@ -1336,16 +1563,20 @@ function initApp() {
       if (!document.getElementById("modal").classList.contains("hidden")) return;
       if (e.key === "ArrowRight") cbtGo(exam.current + 1);
       else if (e.key === "ArrowLeft") cbtGo(exam.current - 1);
-      else if (n >= 1 && n <= byId.get(exam.ids[exam.current]).options.length) chooseExamOption(n - 1);
+      else {
+        const eq = byId.get(exam.ids[exam.current]);
+        if (n >= 1 && n <= eq.options.length) chooseExamOption(validOrder(eq, exam.orders && exam.orders[exam.current])[n - 1]);
+      }
       return;
     }
-    if (appMode !== "PRACTICE" || prefs.view !== "SINGLE" || !sessionList.length) return;
-    if (e.key === "ArrowRight") goTo(singleIndex + 1);
-    else if (e.key === "ArrowLeft") goTo(singleIndex - 1);
-    else if (n >= 1 && n <= sessionList[singleIndex].options.length) {
-      const q = sessionList[singleIndex];
-      handleAnswer(q, n - 1, document.getElementById(`q-${q.id}`));
-    }
+    if (!study || !document.getElementById("modal").classList.contains("hidden")) return;
+    if (e.key === "Escape") return closeStudy();
+    if (study.current === null) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); closeStudy(); } return; }
+    const q = byId.get(study.current);
+    if (study.answered === null) { if (n >= 1 && n <= q.options.length) answerStudy(validOrder(q, study.order)[n - 1]); return; }
+    const correct = study.answered === q.answer;
+    if (e.key === " " || e.key === "Enter") { e.preventDefault(); gradeStudy(correct ? 3 : 1); }
+    else if (n >= 1 && n <= 4) gradeStudy(correct ? n : 1);
   });
 
   document.addEventListener("visibilitychange", () => {
@@ -1358,6 +1589,8 @@ function initApp() {
 
   document.getElementById("login-title").textContent = CFG.examName;
   document.getElementById("login-form").addEventListener("submit", handleLogin);
+  document.querySelectorAll("[data-lm]").forEach(b => b.onclick = () => setLoginMode(b.dataset.lm));
+  setLoginMode(lsGet("ma_exam_last_email") ? "existing" : "new");
   document.getElementById("btn-logout").onclick = logout;
   document.getElementById("install-hint-close").onclick = () => { lsSet("ma_install_hint_dismissed", true); document.getElementById("install-hint").classList.add("hidden"); };
   window.addEventListener("online", () => { flushSave(); flushExamResults(); });
@@ -1395,7 +1628,6 @@ function showApp() {
   document.getElementById("user-email").textContent = userEmail;
   setSync(dirty ? "pending" : "saved");
   setAppMode("PRACTICE");
-  rebuildSession();
   maybeResumeExam();
   maybeShowInstallHint();
 }
@@ -1447,37 +1679,46 @@ function startSession() {
 // Must match USERNAME_RE in Code.gs. First char not . or - (avoids spreadsheet formula injection).
 const USERNAME_RE = /^[a-z0-9_぀-ヿ一-鿿０-９ａ-ｚ][a-z0-9_.\-぀-ヿ一-鿿０-９ａ-ｚ]{1,19}$/;
 
+let loginMode = "existing";   // "existing" = 続きから / "new" = はじめて
+function setLoginMode(m) {
+  loginMode = m;
+  document.querySelectorAll("[data-lm]").forEach(b => b.classList.toggle("active", b.dataset.lm === m));
+  document.getElementById("login-email-label").textContent = m === "new" ? "ユーザー名（自由に決めてください）" : "ユーザー名";
+  document.getElementById("login-submit").textContent = m === "new" ? "登録して始める" : "ログイン";
+  document.getElementById("login-note").textContent = m === "new"
+    ? "好きなユーザー名で登録します（メールアドレスや本名は不要です）。次回からはこのユーザー名とチームコードで「続きから」ログインしてください。"
+    : "前回と同じユーザー名を入力してください。初めての方は「はじめて」を選んでください。";
+  document.getElementById("login-error").textContent = "";
+}
 function handleLogin(ev) {
   ev.preventDefault();
   const email = document.getElementById("login-email").value.trim().toLowerCase();
-  const pin = document.getElementById("login-pin").value.trim();
   const teamCode = document.getElementById("login-team").value.trim();
   const err = document.getElementById("login-error");
   // "email" is the historical field name; it now holds a user-chosen username.
   if (email.includes("@")) { err.textContent = "メールアドレスではなく、好きなユーザー名を入力してください。"; return; }
   if (!USERNAME_RE.test(email)) { err.textContent = "ユーザー名は2〜20文字の英数字・日本語・記号（_ . -）で入力してください（先頭に . や - は使えません）。"; return; }
-  if (!/^[0-9]{4,8}$/.test(pin)) { err.textContent = "PINは4〜8桁の数字で入力してください。"; return; }
+  if (!teamCode) { err.textContent = "チームコードを入力してください。"; return; }
   const btn = document.getElementById("login-submit");
   btn.disabled = true; btn.textContent = "確認中…"; err.textContent = "";
   session = null;
-  api("login", { email, pin, teamCode })
+  api("login", { email, teamCode, mode: loginMode })
     .then(res => {
       session = { email: res.email, token: res.token };
       lsSet(SESSION_KEY, session);
       lsSet("ma_exam_last_email", res.email);
-      document.getElementById("login-pin").value = "";
       document.getElementById("login-team").value = "";
       startSession();
     })
     .catch(e => { err.textContent = e.message; })
-    .finally(() => { btn.disabled = false; btn.textContent = "ログイン"; });
+    .finally(() => { btn.disabled = false; btn.textContent = loginMode === "new" ? "登録して始める" : "ログイン"; });
 }
 
 function resetSessionVars() {
   clearTimeout(saveTimer);
-  state = { answers: {}, mistakes: {}, bookmarks: {} };
+  state = { answers: {}, srs: {}, days: {} };
   history = []; dirty = false; saving = false; exam = null; lastResult = null;
-  currentFilter = "ALL"; currentMode = "ALL";
+  if (study) { study = null; document.getElementById("study").classList.add("hidden"); document.body.style.overflow = ""; }
 }
 function forceLogout(msg) {
   lsDel(SESSION_KEY); session = null;

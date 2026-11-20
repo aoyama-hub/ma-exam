@@ -1,6 +1,6 @@
-/* Offline support: network-first, falling back to the cached copy.
+﻿/* Offline support: network-first, falling back to the cached copy.
    Bump CACHE when you change the file list. */
-const CACHE = "ma-exam-v3";
+const CACHE = "ma-exam-v4";
 const SHELL = ["./", "index.html", "config.js", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
