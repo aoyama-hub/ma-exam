@@ -14,6 +14,8 @@ const API_URL = "https://script.google.com/macros/s/AKfycbzCCpBXAa-ObsFtBIi61iFE
 const EXAM_CONFIG = {
   examName: "中小企業M&A実務能力・倫理検定試験",
   lawBaseDate: "2026年3月31日",          // 法令・税制等の基準日
+  examDates: "2027年1月28日〜30日",       // 本試験の実施日（学習タブの見出しに表示）
+  examStart: "2027-01-28",               // カウントダウン「本試験まで あとN日」の基準日
   minutes: 120,                          // 本番の試験時間
   subjects: [                            // 本番の出題数（合計60問）。category はこの name と完全一致させる
     { name: "M&A実務",       count: 22 },

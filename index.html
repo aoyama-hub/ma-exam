@@ -349,6 +349,13 @@
     .subj-head { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 3px; color: var(--text-sub); }
     .subj-head span:last-child { color: var(--text-muted); font-size: 0.74rem; }
     .menu-opts { display: flex; flex-direction: column; gap: 10px; padding-top: 10px; }
+    .hero { background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); color: #fff; border: none; }
+    .hero-title { font-size: 1.02rem; font-weight: 800; line-height: 1.45; }
+    .hero-title span { display: block; font-size: 0.78rem; font-weight: 600; opacity: 0.85; }
+    .hero-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 8px; font-size: 0.72rem; opacity: 0.9; }
+    .hero-count { margin-top: 10px; font-size: 0.82rem; }
+    .hero-count b { font-size: 1.35rem; margin: 0 2px; }
+    @media (prefers-color-scheme: dark) { .hero { background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); } }
     /* Floating shutter-style start button (学習 tab), sitting just above the bottom bar */
     body.has-fab { padding-bottom: calc(190px + env(safe-area-inset-bottom)); }
     .fab-wrap { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(66px + env(safe-area-inset-bottom)); z-index: 31; display: flex; flex-direction: column; align-items: center; gap: 6px; pointer-events: none; }
@@ -357,7 +364,11 @@
     .fab-caption b { font-size: 0.78rem; color: var(--text); }
     .fab-caption span { font-size: 0.66rem; color: var(--text-muted); }
     .fab-row { position: relative; display: flex; align-items: center; }
-    .fab { position: relative; z-index: 2; width: 70px; height: 70px; border-radius: 50%; border: 4px solid var(--card-bg); background: var(--primary); color: var(--card-bg); box-shadow: 0 0 0 2px var(--primary), 0 6px 16px rgba(0,0,0,0.25); cursor: pointer; display: flex; align-items: center; justify-content: center; padding-left: 4px; transition: transform 0.1s; }
+    .fab { position: relative; z-index: 2; width: 70px; height: 70px; border-radius: 50%; border: 4px solid var(--card-bg); background: var(--primary); color: var(--card-bg); box-shadow: 0 0 0 2px var(--primary), 0 6px 16px rgba(0,0,0,0.25); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; transition: transform 0.1s; }
+    .fab svg { display: block; flex-shrink: 0; }
+    /* Wide screens (laptop): the button sits in the page under 記憶の定着度 instead of floating */
+    .fab-wrap.inline { position: static; transform: none; margin: 4px auto 18px; width: max-content; }
+    @media (min-width: 768px) { body.has-fab { padding-bottom: calc(80px + env(safe-area-inset-bottom)); } }
     .fab:active { transform: scale(0.94); }
     .fab:disabled { background: var(--border-strong); box-shadow: 0 0 0 2px var(--border-strong), 0 4px 10px rgba(0,0,0,0.15); cursor: default; }
     /* small notch tucked against the right side of the button → 出題設定 */
@@ -428,7 +439,8 @@
     <div class="fab-caption" id="fab-caption"></div>
     <div class="fab-row">
       <button class="fab-notch" id="btn-study-opts" aria-label="出題設定"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button>
-      <button class="fab" id="btn-start-study" aria-label="学習を始める"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" fill="currentColor"/></svg></button>
+      <button class="fab" id="btn-start-study" aria-label="学習を始める"><!-- triangle (7,4)(7,20)(22,12): centroid = (12,12) = centre of the 24×24 box, so it sits in the middle of the circle -->
+        <svg viewBox="0 0 24 24" width="38" height="38" aria-hidden="true"><path d="M7 4.9v14.2a.9.9 0 0 0 1.36.77l13.1-7.1a.9.9 0 0 0 0-1.54l-13.1-7.1A.9.9 0 0 0 7 4.9z" fill="currentColor"/></svg></button>
     </div>
   </div>
 
@@ -930,7 +942,19 @@ function renderStudyMenu() {
   const modes = [["auto", "おすすめ"], ["weak", "苦手を優先"], ["new", "未学習のみ"], ["random", "ランダム"]];
   const chip = (attr, val, text, on) => `<button class="btn-filter ${on ? "active" : ""}" data-${attr}="${escapeHtml(val)}">${text}</button>`;
 
-  const statsHtml = `
+  // Title card: app name, 法令基準日, exam dates + countdown
+  const examStart = CFG.examStart || "2027-01-28";
+  const daysLeft = Math.ceil((new Date(examStart + "T00:00:00") - new Date(new Date().toDateString())) / DAY);
+  const heroHtml = `
+    <div class="card hero">
+      <div class="hero-title">${escapeHtml(CFG.examName)}<span>対策問題集</span></div>
+      <div class="hero-meta">
+        <span>本試験 ${escapeHtml(CFG.examDates || "2027年1月28日〜30日")}</span>
+        <span>法令等基準日 ${escapeHtml(CFG.lawBaseDate)}</span>
+      </div>
+      ${daysLeft > 0 ? `<div class="hero-count">本試験まで あと <b>${daysLeft}</b> 日</div>` : ""}
+    </div>`;
+  const statsHtml = heroHtml + `
     <div class="card">
       <div class="tiles">
         <div class="tile"><span class="tile-val">${today.n}<small>問</small></span><span class="tile-label">今日の学習</span></div>
@@ -1785,6 +1809,16 @@ function browseBodyHtml(q) {
    Wiring
 ========================================================================== */
 function initApp() {
+  // Start button: floating above the bottom bar on phones; inline under 記憶の定着度 on wide screens
+  const mqWide = window.matchMedia("(min-width: 768px)");
+  const placeFab = () => {
+    const w = document.getElementById("fab-wrap");
+    if (mqWide.matches) { w.classList.add("inline"); document.getElementById("practice-view").appendChild(w); }
+    else { w.classList.remove("inline"); document.getElementById("app-main").insertBefore(w, document.getElementById("settings")); }
+  };
+  if (mqWide.addEventListener) mqWide.addEventListener("change", placeFab); else mqWide.addListener(placeFab);
+  placeFab();
+
   const settings = document.getElementById("settings");
   document.getElementById("btn-settings").onclick = () => settings.classList.remove("hidden");
   document.getElementById("settings-close").onclick = () => settings.classList.add("hidden");
