@@ -349,13 +349,20 @@
     .subj-head { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 3px; color: var(--text-sub); }
     .subj-head span:last-child { color: var(--text-muted); font-size: 0.74rem; }
     .menu-opts { display: flex; flex-direction: column; gap: 10px; padding-top: 10px; }
-    .start-card { padding: 14px; }
-    .study-opts { margin-top: 10px; }
-    .study-opts summary { list-style: none; display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); padding: 4px 2px; }
-    .study-opts summary::-webkit-details-marker { display: none; }
-    .study-opts summary span { font-weight: 400; margin-left: auto; color: var(--text-sub); }
-    .study-opts summary::after { content: "›"; font-size: 1rem; transition: transform 0.15s; }
-    .study-opts[open] summary::after { transform: rotate(90deg); }
+    /* Floating shutter-style start button (学習 tab), sitting just above the bottom bar */
+    body.has-fab { padding-bottom: calc(190px + env(safe-area-inset-bottom)); }
+    .fab-wrap { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(66px + env(safe-area-inset-bottom)); z-index: 31; display: flex; flex-direction: column; align-items: center; gap: 6px; pointer-events: none; }
+    .fab-wrap > * { pointer-events: auto; }
+    .fab-caption { display: flex; flex-direction: column; align-items: center; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 4px 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); white-space: nowrap; }
+    .fab-caption b { font-size: 0.78rem; color: var(--text); }
+    .fab-caption span { font-size: 0.66rem; color: var(--text-muted); }
+    .fab-row { position: relative; display: flex; align-items: center; }
+    .fab { position: relative; z-index: 2; width: 70px; height: 70px; border-radius: 50%; border: 4px solid var(--card-bg); background: var(--primary); color: var(--card-bg); box-shadow: 0 0 0 2px var(--primary), 0 6px 16px rgba(0,0,0,0.25); cursor: pointer; display: flex; align-items: center; justify-content: center; padding-left: 4px; transition: transform 0.1s; }
+    .fab:active { transform: scale(0.94); }
+    .fab:disabled { background: var(--border-strong); box-shadow: 0 0 0 2px var(--border-strong), 0 4px 10px rgba(0,0,0,0.15); cursor: default; }
+    /* small notch tucked against the right side of the button → 出題設定 */
+    .fab-notch { position: absolute; z-index: 1; left: calc(100% - 14px); top: 50%; transform: translateY(-50%); width: 46px; height: 34px; padding-left: 14px; border-radius: 0 17px 17px 0; border: 1px solid var(--border-strong); border-left: none; background: var(--card-bg); color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
+    .fab-notch .ico { width: 18px; height: 18px; }
     .mode-desc { font-size: 0.8rem; color: var(--text-sub); background: var(--bg); border-radius: 6px; padding: 8px 10px; }
     .mode-desc strong { color: var(--primary); }
 
@@ -415,6 +422,15 @@
     </button>
     </div>
   </header>
+
+  <!-- ===== 学習 tab: floating shutter-style start button + side notch for 出題設定 ===== -->
+  <div class="fab-wrap hidden" id="fab-wrap">
+    <div class="fab-caption" id="fab-caption"></div>
+    <div class="fab-row">
+      <button class="fab-notch" id="btn-study-opts" aria-label="出題設定"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button>
+      <button class="fab" id="btn-start-study" aria-label="学習を始める"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" fill="currentColor"/></svg></button>
+    </div>
+  </div>
 
   <!-- ===== ⚙ Settings (account, sync, reset, logout) ===== -->
   <div class="modal hidden" id="settings">
@@ -760,7 +776,6 @@ function savePrefs() { lsSet(PREFS_KEY, prefs); }
 let prefs = loadPrefs();
 let appMode = "PRACTICE";
 let study = null;          // running study session
-let studyOptsOpen = false; // 「出題設定」 open/closed (kept across re-renders while picking options)
 
 const MIN = 60000, DAY = 86400000, DAY_START_H = 4;   // a study "day" rolls over at 4:00
 const LEARN_STEPS = [1 * MIN, 10 * MIN];
@@ -924,19 +939,7 @@ function renderStudyMenu() {
         <div class="tile"><span class="tile-val" style="color:var(--danger)">${weakN}<small>問</small></span><span class="tile-label">苦手</span></div>
       </div>
     </div>`;
-  // Start button first; 科目・出題 tucked into a collapsible 「出題設定」 (summary shows the current choice)
   const modeName = (modes.find(m => m[0] === prefs.mode) || modes[0])[1];
-  const startHtml = `
-    <div class="card start-card">
-      <button class="btn-primary" id="btn-start-study" ${startMode ? "" : "disabled"}>${label}</button>
-      <details class="study-opts" id="study-opts" ${studyOptsOpen ? "open" : ""}>
-        <summary>出題設定<span>${escapeHtml(prefs.cat === "ALL" ? "すべての科目" : prefs.cat)}・${escapeHtml(modeName)}</span></summary>
-        <div class="menu-opts">
-          <div class="filter-group"><span class="filter-label">科目</span>${chip("cat", "ALL", "すべて", prefs.cat === "ALL")}${cats.map(c => chip("cat", c, escapeHtml(c), prefs.cat === c)).join("")}</div>
-          <div class="filter-group"><span class="filter-label">出題</span>${modes.map(([v, t]) => chip("mode", v, t, prefs.mode === v)).join("")}</div>
-        </div>
-      </details>
-    </div>`;
   const levelsHtml = `
     <div class="card">
       <div class="section-title">記憶の定着度</div>
@@ -949,13 +952,32 @@ function renderStudyMenu() {
       }).join("")}
       <div class="note">明日の復習予定：${tomorrow}問　／　習得 ＝ 復習間隔が${MATURE_DAYS}日以上になった問題</div>
     </div>`;
-  el.innerHTML = statsHtml + levelsHtml + startHtml;   // stats → 記憶の定着度 → 学習を始める (user's order)
+  el.innerHTML = statsHtml + levelsHtml;
 
-  document.getElementById("study-opts").addEventListener("toggle", e => { studyOptsOpen = e.target.open; });
-  el.querySelectorAll("[data-cat]").forEach(b => b.onclick = () => { prefs.cat = b.dataset.cat; savePrefs(); renderStudyMenu(); });
-  el.querySelectorAll("[data-mode]").forEach(b => b.onclick = () => { prefs.mode = b.dataset.mode; savePrefs(); renderStudyMenu(); });
-  document.getElementById("btn-start-study").onclick = () => { if (startMode) startStudy(planStudy(startMode)); };
+  // Floating shutter-style start button (above the bottom bar) + side notch → 出題設定 sheet
+  const fab = document.getElementById("btn-start-study");
+  fab.disabled = !startMode;
+  fab.setAttribute("aria-label", label);
+  document.getElementById("fab-caption").innerHTML =
+    `<b>${escapeHtml(label)}</b><span>${escapeHtml(prefs.cat === "ALL" ? "すべての科目" : prefs.cat)}・${escapeHtml(modeName)}</span>`;
+  fab.onclick = () => { if (startMode) startStudy(planStudy(startMode)); };
+  document.getElementById("btn-study-opts").onclick = () => openStudyOpts();
+
+  // the sheet re-renders itself while open, so picking options updates both the sheet and the caption
+  function openStudyOpts() {
+    openModal(`<div class="modal-title">出題設定</div>
+      <div class="menu-opts">
+        <div class="filter-group"><span class="filter-label">科目</span>${chip("cat", "ALL", "すべて", prefs.cat === "ALL")}${cats.map(c => chip("cat", c, escapeHtml(c), prefs.cat === c)).join("")}</div>
+        <div class="filter-group"><span class="filter-label">出題</span>${modes.map(([v, t]) => chip("mode", v, t, prefs.mode === v)).join("")}</div>
+      </div>
+      <div class="modal-actions"><button class="btn-primary" id="opts-done">OK</button></div>`);
+    const box = document.getElementById("modal-box");
+    box.querySelectorAll("[data-cat]").forEach(b => b.onclick = () => { prefs.cat = b.dataset.cat; savePrefs(); renderStudyMenu(); reopenOpts(); });
+    box.querySelectorAll("[data-mode]").forEach(b => b.onclick = () => { prefs.mode = b.dataset.mode; savePrefs(); renderStudyMenu(); reopenOpts(); });
+    document.getElementById("opts-done").onclick = closeModal;
+  }
 }
+function reopenOpts() { document.getElementById("btn-study-opts").click(); }
 
 /* Shared explanation block (practice + exam review) */
 /* Choices are shown in a shuffled order. `order` = original option indexes in display order;
@@ -1366,6 +1388,8 @@ function setAppMode(mode) {
   appMode = mode;
   document.querySelectorAll(".tab[data-app]").forEach(t => t.classList.toggle("active", t.dataset.app === mode || (mode === "RESULT" && t.dataset.app === "EXAM")));
   document.getElementById("practice-view").classList.toggle("hidden", mode !== "PRACTICE");
+  document.getElementById("fab-wrap").classList.toggle("hidden", mode !== "PRACTICE");
+  document.body.classList.toggle("has-fab", mode === "PRACTICE");   // extra bottom padding so the button never hides content
   document.getElementById("exam-start-view").classList.toggle("hidden", mode !== "EXAM");
   document.getElementById("exam-result-view").classList.toggle("hidden", mode !== "RESULT");
   document.getElementById("browse-view").classList.toggle("hidden", mode !== "BROWSE");
