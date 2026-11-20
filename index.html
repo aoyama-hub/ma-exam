@@ -60,8 +60,18 @@
     /* Header */
     h1 { font-size: 1.12rem; color: var(--primary); line-height: 1.4; }
     .subtitle { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
-    .user-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 8px; font-size: 0.75rem; color: var(--text-muted); flex-wrap: wrap; }
-    #user-email { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65%; }
+    .app-header { display: flex; align-items: center; gap: 6px; margin-bottom: 14px; }
+    .app-header .tabs { flex: 1; margin-top: 0; }
+    .tab { display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
+    .gear { position: relative; flex-shrink: 0; width: 40px; height: 40px; border: none; border-radius: 8px; background: var(--subtle-bg); color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .gear[data-s="error"]::after { content: ""; position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--danger); }
+    .set-list { border: 1px solid var(--border); border-radius: 8px; margin: 12px 0 8px; }
+    .set-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 11px 12px; font-size: 0.86rem; }
+    .set-row + .set-row { border-top: 1px solid var(--border); }
+    .set-row > span:first-child { color: var(--text-muted); }
+    #user-email { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .set-actions { display: grid; gap: 8px; margin-top: 12px; }
+    .set-danger { color: var(--danger); }
     .sync { font-weight: 600; white-space: nowrap; }
     .sync[data-s="saved"] { color: var(--success); }
     .sync[data-s="saving"], .sync[data-s="pending"] { color: var(--text-muted); }
@@ -334,7 +344,14 @@
     .subj-row { margin-top: 10px; }
     .subj-head { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 3px; color: var(--text-sub); }
     .subj-head span:last-child { color: var(--text-muted); font-size: 0.74rem; }
-    .menu-opts { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+    .menu-opts { display: flex; flex-direction: column; gap: 10px; padding-top: 10px; }
+    .start-card { padding: 14px; }
+    .study-opts { margin-top: 10px; }
+    .study-opts summary { list-style: none; display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); padding: 4px 2px; }
+    .study-opts summary::-webkit-details-marker { display: none; }
+    .study-opts summary span { font-weight: 400; margin-left: auto; color: var(--text-sub); }
+    .study-opts summary::after { content: "›"; font-size: 1rem; transition: transform 0.15s; }
+    .study-opts[open] summary::after { transform: rotate(90deg); }
     .mode-desc { font-size: 0.8rem; color: var(--text-sub); background: var(--bg); border-radius: 6px; padding: 8px 10px; }
     .mode-desc strong { color: var(--primary); }
 
@@ -371,6 +388,8 @@
     @media (max-width: 480px) {
       body { padding-left: 8px; padding-right: 8px; }
       .tile-val { font-size: 1.1rem; }
+      .tab { flex-direction: column; gap: 0; padding: 6px 2px; font-size: 0.72rem; line-height: 1.25; }
+      .tab-ico { font-size: 1.05rem; }
       .grade .g-label { font-size: 0.76rem; }
       .card { padding: 14px; }
       .question-card { padding: 16px; }
@@ -382,20 +401,34 @@
 <body>
 
 <div class="container" id="app-main">
-  <header class="card">
-    <h1 id="exam-title"></h1>
-    <div class="subtitle" id="exam-subtitle"></div>
-    <div class="user-bar">
-      <span id="user-email"></span>
-      <span><span class="sync" id="sync-status" data-s="saved">✓ 保存済み</span>　<button class="btn-text" id="btn-logout">ログアウト</button></span>
-    </div>
+  <header class="app-header">
     <div class="tabs">
-      <button class="tab" data-app="PRACTICE">📘 学習</button>
-      <button class="tab" data-app="EXAM">📝 模擬試験</button>
-      <button class="tab" data-app="BROWSE">📋 問題一覧</button>
-      <button class="tab" data-app="BOOKS">📚 教科書</button>
+      <button class="tab" data-app="PRACTICE"><span class="tab-ico">📘</span><span>学習</span></button>
+      <button class="tab" data-app="EXAM"><span class="tab-ico">📝</span><span>模擬試験</span></button>
+      <button class="tab" data-app="BROWSE"><span class="tab-ico">📋</span><span>問題一覧</span></button>
+      <button class="tab" data-app="BOOKS"><span class="tab-ico">📚</span><span>教科書</span></button>
     </div>
+    <button class="gear" id="btn-settings" aria-label="設定" data-s="saved">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    </button>
   </header>
+
+  <!-- ===== ⚙ Settings (account, sync, reset, logout) ===== -->
+  <div class="modal hidden" id="settings">
+    <div class="modal-box">
+      <div class="modal-title">設定</div>
+      <div class="set-list">
+        <div class="set-row"><span>ユーザー名</span><b id="user-email"></b></div>
+        <div class="set-row"><span>保存状態</span><span class="sync" id="sync-status" data-s="saved">✓ 保存済み</span></div>
+      </div>
+      <p class="note">学習記録はアカウントに保存され、どの端末からでも続きから学習できます。</p>
+      <div class="set-actions">
+        <button class="btn-secondary" id="btn-reset">学習記録をリセット…</button>
+        <button class="btn-secondary set-danger" id="btn-logout">ログアウト</button>
+      </div>
+      <div class="modal-actions"><button class="btn-secondary" id="settings-close">閉じる</button></div>
+    </div>
+  </div>
 
   <div class="install-hint hidden" id="install-hint">
     <span>📲 ホーム画面に追加するとアプリとして使えます：Safariの <strong>共有ボタン</strong> →「<strong>ホーム画面に追加</strong>」</span>
@@ -407,10 +440,6 @@
   <!-- ===== Practice ===== -->
   <section id="practice-view">
     <div id="study-menu"></div>
-    <footer>
-      <button class="btn-text" id="btn-reset">学習記録をリセット…</button>
-      <div>学習記録はアカウントに保存され、どの端末からでも続きから学習できます</div>
-    </footer>
   </section>
 
   <!-- ===== Exam start ===== -->
@@ -653,6 +682,7 @@ function normalizeState(s) {
 function setSync(s) {
   const el = document.getElementById("sync-status");
   el.dataset.s = s;
+  document.getElementById("btn-settings").dataset.s = s;   // red dot on ⚙ when saving failed (offline)
   el.textContent = { saved: "✓ 保存済み", pending: "… 未保存", saving: "保存中…", error: "⚠ オフライン（後で保存します）" }[s];
 }
 function saveState() {
@@ -727,6 +757,7 @@ function savePrefs() { lsSet(PREFS_KEY, prefs); }
 let prefs = loadPrefs();
 let appMode = "PRACTICE";
 let study = null;          // running study session
+let studyOptsOpen = false; // 「出題設定」 open/closed (kept across re-renders while picking options)
 
 const MIN = 60000, DAY = 86400000, DAY_START_H = 4;   // a study "day" rolls over at 4:00
 const LEARN_STEPS = [1 * MIN, 10 * MIN];
@@ -890,14 +921,18 @@ function renderStudyMenu() {
         <div class="tile"><span class="tile-val" style="color:var(--danger)">${weakN}<small>問</small></span><span class="tile-label">苦手</span></div>
       </div>
     </div>`;
+  // Start button first; 科目・出題 tucked into a collapsible 「出題設定」 (summary shows the current choice)
+  const modeName = (modes.find(m => m[0] === prefs.mode) || modes[0])[1];
   const startHtml = `
-    <div class="card">
-      <div class="section-title">学習する</div>
-      <div class="menu-opts">
-        <div class="filter-group"><span class="filter-label">科目</span>${chip("cat", "ALL", "すべて", prefs.cat === "ALL")}${cats.map(c => chip("cat", c, escapeHtml(c), prefs.cat === c)).join("")}</div>
-        <div class="filter-group"><span class="filter-label">出題</span>${modes.map(([v, t]) => chip("mode", v, t, prefs.mode === v)).join("")}</div>
-      </div>
+    <div class="card start-card">
       <button class="btn-primary" id="btn-start-study" ${startMode ? "" : "disabled"}>${label}</button>
+      <details class="study-opts" id="study-opts" ${studyOptsOpen ? "open" : ""}>
+        <summary>出題設定<span>${escapeHtml(prefs.cat === "ALL" ? "すべての科目" : prefs.cat)}・${escapeHtml(modeName)}</span></summary>
+        <div class="menu-opts">
+          <div class="filter-group"><span class="filter-label">科目</span>${chip("cat", "ALL", "すべて", prefs.cat === "ALL")}${cats.map(c => chip("cat", c, escapeHtml(c), prefs.cat === c)).join("")}</div>
+          <div class="filter-group"><span class="filter-label">出題</span>${modes.map(([v, t]) => chip("mode", v, t, prefs.mode === v)).join("")}</div>
+        </div>
+      </details>
     </div>`;
   const levelsHtml = `
     <div class="card">
@@ -913,6 +948,7 @@ function renderStudyMenu() {
     </div>`;
   el.innerHTML = statsHtml + startHtml + levelsHtml;   // start button near the top on phones
 
+  document.getElementById("study-opts").addEventListener("toggle", e => { studyOptsOpen = e.target.open; });
   el.querySelectorAll("[data-cat]").forEach(b => b.onclick = () => { prefs.cat = b.dataset.cat; savePrefs(); renderStudyMenu(); });
   el.querySelectorAll("[data-mode]").forEach(b => b.onclick = () => { prefs.mode = b.dataset.mode; savePrefs(); renderStudyMenu(); });
   document.getElementById("btn-start-study").onclick = () => { if (startMode) startStudy(planStudy(startMode)); };
@@ -1722,10 +1758,12 @@ function browseBodyHtml(q) {
    Wiring
 ========================================================================== */
 function initApp() {
-  document.getElementById("exam-title").textContent = CFG.examName + " 対策問題集";
-  document.getElementById("exam-subtitle").textContent = `CBT・四肢択一・${FULL_COUNT}問/${CFG.minutes}分　法令等基準日：${CFG.lawBaseDate}`;
+  const settings = document.getElementById("settings");
+  document.getElementById("btn-settings").onclick = () => settings.classList.remove("hidden");
+  document.getElementById("settings-close").onclick = () => settings.classList.add("hidden");
+  settings.addEventListener("click", e => { if (e.target === settings) settings.classList.add("hidden"); });
   document.querySelectorAll(".tab").forEach(t => t.onclick = () => setAppMode(t.dataset.app));
-  document.getElementById("btn-reset").onclick = resetProgressDialog;
+  document.getElementById("btn-reset").onclick = () => { document.getElementById("settings").classList.add("hidden"); resetProgressDialog(); };
   document.getElementById("study-close").onclick = closeStudy;
   // 📖 出典 links (anywhere) open the book reader
   document.addEventListener("click", e => {
@@ -1800,7 +1838,7 @@ function initApp() {
   document.getElementById("login-form").addEventListener("submit", handleLogin);
   document.querySelectorAll("[data-lm]").forEach(b => b.onclick = () => setLoginMode(b.dataset.lm));
   setLoginMode(lsGet("ma_exam_last_email") ? "existing" : "new");
-  document.getElementById("btn-logout").onclick = logout;
+  document.getElementById("btn-logout").onclick = () => { document.getElementById("settings").classList.add("hidden"); logout(); };
   document.getElementById("install-hint-close").onclick = () => { lsSet("ma_install_hint_dismissed", true); document.getElementById("install-hint").classList.add("hidden"); };
   window.addEventListener("online", () => { flushSave(); flushExamResults(); });
 
