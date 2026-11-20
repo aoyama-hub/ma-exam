@@ -136,6 +136,8 @@
     .exp-correct { color: var(--success); }
     .exp-wrong { color: var(--danger); }
     .exp-taboo-warn { background: var(--taboo-bg); color: var(--taboo); font-size: 0.82rem; font-weight: 600; padding: 6px 10px; border-radius: 6px; margin-bottom: 8px; }
+    .exp-source { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border-strong); font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
+    .b-body .exp-source { border-top: none; padding-top: 0; }
     .exp-overview { font-size: 0.9rem; margin-bottom: 10px; color: var(--text-sub); white-space: pre-line; }
     .exp-details-list { list-style: none; display: flex; flex-direction: column; gap: 6px; border-top: 1px dashed var(--border-strong); padding-top: 10px; font-size: 0.85rem; }
     .exp-item { padding: 6px 10px; background: var(--card-bg); border-radius: 6px; border: 1px solid var(--border); white-space: pre-line; }
@@ -908,8 +910,21 @@ function explanationHtml(q, userAns, extraActions, order) {
       ${userAns !== undefined && isTaboo(q, userAns) ? `<div class="exp-taboo-warn">⚠ 禁忌肢を選択しました。本試験では一定数選ぶと不合格になります。</div>` : ""}
       ${q.explanation.overview ? `<div class="exp-overview">${fmt(q.explanation.overview)}</div>` : ""}
       ${figuresHtml(q)}
+      ${sourceHtml(q)}
       ${extraActions || ""}
     </div>`;
+}
+/* 出典 (where to read up in the textbooks). q.source like 「スタンダード 第七章「7-7 資産（不動産）」」 */
+const BOOK_TITLES = { "実務の基本": "『中小M&A実務の基本』", "スタンダード": "『中小企業M&Aスタンダード』", "株式譲渡の税務": "『中小企業M&A株式譲渡の税務』" };
+function sourceText(q) {
+  let s = String(q.source || "").trim();
+  if (!s) return "";
+  if (s.indexOf("『") < 0) s = s.replace(/実務の基本|スタンダード|株式譲渡の税務/g, m => BOOK_TITLES[m]);
+  return s.replace(/／/g, "　／　");
+}
+function sourceHtml(q) {
+  const s = sourceText(q);
+  return s ? `<div class="exp-source">📖 出典：${escapeHtml(s)}</div>` : "";
 }
 /* Answered state: options keep their red/green colouring and each one shows its own explanation underneath. */
 function revealedOptionsHtml(q, userAns, order) {
@@ -1524,6 +1539,7 @@ function browseBodyHtml(q) {
     </ul>
     ${q.explanation.overview ? `<div class="b-overview"><strong>解説</strong>${fmt(q.explanation.overview)}</div>` : ""}
     ${figuresHtml(q)}
+    ${sourceHtml(q)}
     ${errs ? `<div class="b-errors">⚠ データの問題：${errs.map(escapeHtml).join(" / ")}</div>` : ""}`;
 }
 
