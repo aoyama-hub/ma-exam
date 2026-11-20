@@ -367,7 +367,20 @@
     .fab { position: relative; z-index: 2; width: 70px; height: 70px; border-radius: 50%; border: 4px solid var(--card-bg); background: var(--primary); color: var(--card-bg); box-shadow: 0 0 0 2px var(--primary), 0 6px 16px rgba(0,0,0,0.25); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; transition: transform 0.1s; }
     .fab svg { display: block; flex-shrink: 0; }
     /* Wide screens (laptop): the button sits in the page under 記憶の定着度 instead of floating */
-    .fab-wrap.inline { position: static; transform: none; margin: 4px auto 18px; width: max-content; }
+    .wide-only { display: none; }
+    /* Wide screens: a plain box button in a card (like before), with a 「出題設定」 row underneath */
+    .fab-wrap.inline { position: static; transform: none; display: block; width: auto; margin: 0 0 14px; padding: 14px; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); }
+    .fab-wrap.inline .fab-caption, .fab-wrap.inline .fab svg, .fab-wrap.inline .fab-notch .ico { display: none; }
+    .fab-wrap.inline .wide-only { display: inline; }
+    .fab-wrap.inline .fab-row { display: flex; flex-direction: column; align-items: stretch; }
+    .fab-wrap.inline .fab { order: 1; }
+    .fab-wrap.inline .fab-notch { order: 2; }
+    .fab-wrap.inline .fab { width: 100%; height: auto; padding: 14px; border: none; border-radius: 8px; box-shadow: none; font-size: 1rem; font-weight: 700; font-family: inherit; }
+    .fab-wrap.inline .fab:disabled { box-shadow: none; }
+    .fab-wrap.inline .fab:active { transform: none; }
+    .fab-wrap.inline .fab-notch { position: static; transform: none; width: 100%; height: auto; margin-top: 10px; padding: 4px 2px; border: none; border-radius: 0; box-shadow: none; background: none; justify-content: flex-start; gap: 8px; font: inherit; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+    .fab-wrap.inline .notch-summary { margin-left: auto; font-weight: 400; color: var(--text-sub); }
+    .fab-wrap.inline .notch-summary::after { content: " ›"; color: var(--text-muted); }
     @media (min-width: 768px) { body.has-fab { padding-bottom: calc(80px + env(safe-area-inset-bottom)); } }
     .fab:active { transform: scale(0.94); }
     .fab:disabled { background: var(--border-strong); box-shadow: 0 0 0 2px var(--border-strong), 0 4px 10px rgba(0,0,0,0.15); cursor: default; }
@@ -438,9 +451,9 @@
   <div class="fab-wrap hidden" id="fab-wrap">
     <div class="fab-caption" id="fab-caption"></div>
     <div class="fab-row">
-      <button class="fab-notch" id="btn-study-opts" aria-label="出題設定"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button>
+      <button class="fab-notch" id="btn-study-opts" aria-label="出題設定"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><span class="wide-only">出題設定</span><span class="wide-only notch-summary" id="notch-summary"></span></button>
       <button class="fab" id="btn-start-study" aria-label="学習を始める"><!-- triangle (7,4)(7,20)(22,12): centroid = (12,12) = centre of the 24×24 box, so it sits in the middle of the circle -->
-        <svg viewBox="0 0 24 24" width="38" height="38" aria-hidden="true"><path d="M7 4.9v14.2a.9.9 0 0 0 1.36.77l13.1-7.1a.9.9 0 0 0 0-1.54l-13.1-7.1A.9.9 0 0 0 7 4.9z" fill="currentColor"/></svg></button>
+        <svg viewBox="0 0 24 24" width="38" height="38" aria-hidden="true"><path d="M7 4.9v14.2a.9.9 0 0 0 1.36.77l13.1-7.1a.9.9 0 0 0 0-1.54l-13.1-7.1A.9.9 0 0 0 7 4.9z" fill="currentColor"/></svg><span class="wide-only" id="fab-label">学習を始める</span></button>
     </div>
   </div>
 
@@ -984,6 +997,8 @@ function renderStudyMenu() {
   fab.setAttribute("aria-label", label);
   document.getElementById("fab-caption").innerHTML =
     `<b>${escapeHtml(label)}</b><span>${escapeHtml(prefs.cat === "ALL" ? "すべての科目" : prefs.cat)}・${escapeHtml(modeName)}</span>`;
+  document.getElementById("fab-label").textContent = label;                 // shown in the wide-screen box version
+  document.getElementById("notch-summary").textContent = `${prefs.cat === "ALL" ? "すべての科目" : prefs.cat}・${modeName}`;
   fab.onclick = () => { if (startMode) startStudy(planStudy(startMode)); };
   document.getElementById("btn-study-opts").onclick = () => openStudyOpts();
 
