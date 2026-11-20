@@ -961,7 +961,7 @@ function sourceHtml(q) {
   if (!BOOKS) return `<div class="exp-source">📖 出典：${escapeHtml(sourceText(q))}</div>`;
   // Each cited book/chapter becomes a link that opens the reader at that chapter (scrolled to the section).
   let lastBook = null;
-  const html = src.split(/(／|\/|、|・)/).map(part => {
+  const html = splitSource(src).map(part => {
     if (/^(／|\/|、|・)$/.test(part)) return part === "／" ? "　／　" : escapeHtml(part);
     const t = resolveSource(part, lastBook);
     if (t) lastBook = t.book;
@@ -969,6 +969,20 @@ function sourceHtml(q) {
     return t ? `<button class="src-link" data-book="${t.book}" data-page="${t.page}" data-mark="${escapeHtml(t.mark)}">${label}</button>` : label;
   }).join("");
   return `<div class="exp-source">📖 出典：${html}</div>`;
+}
+
+/* Split "A 第1章「x、y」／B 第2章" at ／ / 、 ・ — but never inside 「…」 (section titles contain 、 and ・). Separators kept. */
+function splitSource(src) {
+  const out = [];
+  let buf = "", depth = 0;
+  for (const ch of src) {
+    if (ch === "「") depth++;
+    if (ch === "」") depth = Math.max(0, depth - 1);
+    if (depth === 0 && "／/、・".includes(ch)) { out.push(buf, ch); buf = ""; }
+    else buf += ch;
+  }
+  out.push(buf);
+  return out.filter(s => s !== "");
 }
 
 /* ==========================================================================
