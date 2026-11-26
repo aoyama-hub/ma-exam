@@ -349,6 +349,24 @@
     .subj-head { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 3px; color: var(--text-sub); }
     .subj-head span:last-child { color: var(--text-muted); font-size: 0.74rem; }
     .menu-opts { display: flex; flex-direction: column; gap: 10px; padding-top: 10px; }
+    .cbt.locked, .cbt.locked * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+    /* leave-the-screen warning: a pop-up card under the timer bar, dismissible with ✕ */
+    .cbt-code { display: block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; opacity: 0.85; }
+    .cbt-warn { position: absolute; z-index: 5; left: 12px; right: 12px; top: 64px; max-width: 560px; margin: 0 auto; display: flex; align-items: flex-start; gap: 10px; padding: 12px 12px 12px 14px; border-radius: 10px; font-size: 0.84rem; font-weight: 700; line-height: 1.5; background: var(--warn-bg); color: var(--warn); border: 1px solid var(--warn); box-shadow: 0 6px 20px rgba(0,0,0,0.2); animation: warn-in 0.2s ease-out; }
+    .cbt-warn.bad { background: var(--danger-bg); color: var(--danger); border-color: var(--danger); }
+    .cbt-warn span { flex: 1; }
+    .cbt-warn-x { flex-shrink: 0; border: none; background: none; color: inherit; font-size: 1.05rem; line-height: 1; padding: 2px 4px; cursor: pointer; opacity: 0.8; }
+    @keyframes warn-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+    .integrity { margin-top: 10px; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 12px; font-size: 0.8rem; }
+    .integrity .ok { color: var(--success); font-weight: 700; }
+    .integrity .bad { color: var(--danger); font-weight: 700; }
+    .code-row { display: flex; gap: 8px; align-items: center; }
+    .code-input { text-transform: uppercase; letter-spacing: 0.08em; font-variant-numeric: tabular-nums; }
+    .code-input::placeholder { text-transform: none; letter-spacing: 0; }
+    .code-row .btn-small { flex-shrink: 0; padding: 9px 12px; font-size: 0.8rem; }
+    .code-badge { display: inline-block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; color: var(--primary); background: var(--primary-light); border-radius: 4px; padding: 0 6px; }
+    .result-code { margin-top: 4px; font-size: 0.82rem; color: var(--text-sub); }
+    .result-code b { letter-spacing: 0.08em; color: var(--primary); }
     .hero { background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); color: #fff; border: none; }
     .hero-title { font-size: 1.02rem; font-weight: 800; line-height: 1.45; }
     .hero-title span { display: block; font-size: 0.78rem; font-weight: 600; opacity: 0.85; }
@@ -522,6 +540,7 @@
     <button class="cbt-finish" id="cbt-finish">試験終了</button>
   </div>
   <div class="cbt-progress"><div id="cbt-progress-fill" style="width:0%"></div></div>
+  <div class="cbt-warn hidden" id="cbt-warn" role="alert"><span id="cbt-warn-text"></span><button class="cbt-warn-x" id="cbt-warn-x" aria-label="閉じる">✕</button></div>
   <div class="cbt-body" id="cbt-body"></div>
   <div class="cbt-bottom">
     <button class="cbt-btn" id="cbt-prev">← 前へ</button>
@@ -603,10 +622,36 @@ function escapeHtml(str) {
   return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 function fmt(str) { return escapeHtml(str).replace(/【(.+?)】/g, '<mark class="kw">【$1】</mark>'); }
-function shuffled(arr) {
+/* Fisher–Yates. `rnd` = a function returning [0,1); Math.random by default, or a seeded PRNG (試験コード). */
+function shuffled(arr, rnd = Math.random) {
   const a = arr.slice();
-  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
   return a;
+}
+
+/* ---------- 試験コード: everyone entering the same code gets the same questions, order and choice order ---------- */
+const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";   // no 0/O/1/I to avoid misreading
+function normalizeCode(s) {   // "exam01 " / "ｅｘａｍ０１" → "EXAM01"
+  return String(s || "").normalize("NFKC").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
+}
+function randomCode() {
+  const a = new Uint32Array(6);
+  (window.crypto || window.msCrypto).getRandomValues(a);
+  return Array.from(a, v => CODE_CHARS[v % CODE_CHARS.length]).join("");
+}
+function hashSeed(str) {      // FNV-1a 32-bit: string → numeric seed
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+  return h >>> 0;
+}
+function mulberry32(seed) {   // small deterministic PRNG, identical results on every device/browser
+  let a = seed >>> 0;
+  return function () {
+    a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
 }
 function pct(x) { return Math.round(x * 100) + "%"; }
 function mmss(ms) {
@@ -1021,7 +1066,7 @@ function reopenOpts() { document.getElementById("btn-study-opts").click(); }
 /* Shared explanation block (practice + exam review) */
 /* Choices are shown in a shuffled order. `order` = original option indexes in display order;
    answers are always stored as the ORIGINAL index (q.answer, taboo, details stay as in the data). */
-function optionOrder(q) { return shuffled(q.options.map((_, i) => i)); }
+function optionOrder(q, rnd) { return shuffled(q.options.map((_, i) => i), rnd); }
 function validOrder(q, order) {
   return Array.isArray(order) && order.length === q.options.length && order.slice().sort().every((v, i) => v === i) ? order : q.options.map((_, i) => i);
 }
@@ -1483,31 +1528,49 @@ function renderExamStart() {
     </div>
 
     <div class="card">
-      <button class="btn-primary" id="btn-start-exam" ${n === 0 ? "disabled" : ""}>試験を開始する</button>
+      <label class="section-title" for="exam-code" style="display:block">試験コード（任意）</label>
+      <div class="code-row">
+        <input id="exam-code" class="search-input code-input" type="text" inputmode="text" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="12" placeholder="例：EXAM01" value="${escapeHtml(examCodeDraft)}">
+        <button type="button" class="btn-small" id="btn-gen-code">ランダム生成</button>
+      </div>
+      <div class="note">同じコードを入力した人は、同じ問題・同じ順番で受験できます（選択肢の並びは人ごとに異なります）。空欄のときは毎回ランダムに出題されます。<br>コード使用時は、コピー操作ができず、試験画面から離れた回数が記録されます。</div>
+      <button class="btn-primary" id="btn-start-exam" style="margin-top:14px" ${n === 0 ? "disabled" : ""}>試験を開始する</button>
     </div>
 
     <div class="card">
       <div class="section-title">受験履歴</div>
       ${history.length ? `<ul class="history-list">${history.map(h => `
         <li>
-          <span>${new Date(h.date).toLocaleString("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}　${escapeHtml(h.type)}</span>
+          <span>${new Date(h.date).toLocaleString("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}　${escapeHtml(h.type)}${h.code ? ` <span class="code-badge">${escapeHtml(h.code)}</span>` : ""}</span>
           <span>${h.correct}/${h.total}（${h.total ? pct(h.correct / h.total) : "-"}）<span class="pill ${h.pass ? "pass" : "fail"}">${h.pass ? "合格" : "不合格"}</span></span>
         </li>`).join("")}</ul>` : `<div class="note" style="margin-top:0">まだ受験記録はありません。</div>`}
     </div>`;
 
   el.querySelectorAll("[data-type]").forEach(b => b.onclick = () => { prefs.examType = b.dataset.type; savePrefs(); renderExamStart(); });
-  document.getElementById("btn-start-exam").onclick = startExam;
+  const codeInput = document.getElementById("exam-code");
+  codeInput.addEventListener("input", () => { examCodeDraft = codeInput.value; });
+  codeInput.addEventListener("change", () => { examCodeDraft = codeInput.value = normalizeCode(codeInput.value); });   // shown as EXAM01
+  document.getElementById("btn-gen-code").onclick = () => { examCodeDraft = codeInput.value = randomCode(); };
+  document.getElementById("btn-start-exam").onclick = () => { examCodeDraft = normalizeCode(codeInput.value); startExam(); };
 }
+let examCodeDraft = "";   // 試験コード typed on the start screen (kept while switching 本番形式/ミニ模試)
 
 function startExam() {
   const type = prefs.examType;
   const plan = planExam(type);
+  // 試験コード → seeded PRNG (same code + same format + same question bank = identical exam on every device).
+  // Pools are sorted by id first so the draw never depends on the order the bank arrived in.
+  const code = normalizeCode(examCodeDraft);
+  const rnd = code ? mulberry32(hashSeed(`${code}|${type}`)) : Math.random;
   const ids = [];
-  plan.forEach(p => shuffled(BANK.filter(q => q.category === p.name)).slice(0, p.take).forEach(q => ids.push(q.id)));
+  plan.forEach(p => shuffled(BANK.filter(q => q.category === p.name).sort((a, b) => a.id - b.id), rnd)
+    .slice(0, p.take).forEach(q => ids.push(q.id)));
   if (!ids.length) return;
   const now = Date.now();
+  // Choice order is shuffled PER PERSON (not seeded), so neighbours with the same code can't copy "1, 3, 2".
   exam = { type, ids, answers: {}, flags: {}, current: 0, startAt: now, endAt: now + examMinutes(ids.length) * 60000,
-           orders: ids.map(id => optionOrder(byId.get(id))) };   // choice order fixed for the whole exam (and its review)
+           orders: ids.map(id => optionOrder(byId.get(id))),   // fixed for the whole exam (and its review)
+           code, bankSize: BANK.length, focusLost: 0, flagged: false };
   persistExam();
   openCbt();
 }
@@ -1515,14 +1578,54 @@ function startExam() {
 function openCbt() {
   document.getElementById("app-main").classList.add("hidden");
   document.getElementById("cbt").classList.remove("hidden");
+  document.getElementById("cbt").classList.toggle("locked", Boolean(exam && exam.code));   // 試験コードあり: no copy / select / menu
   document.body.style.overflow = "hidden";
+  examAway = false;
+  hideCbtWarn();          // the pop-up only appears right after coming back to the exam
   renderCbt();
   clearInterval(timerHandle);
   timerHandle = setInterval(tickTimer, 500);
   tickTimer();
 }
+/* ---------- Integrity checks for exams taken with a 試験コード ---------- */
+// Leaving the exam screen is only RECORDED (never kicks the user out): 1st time yellow pop-up,
+// from FOCUS_LIMIT on red pop-up + the attempt is marked 要確認 in the results and the sheet.
+const FOCUS_LIMIT = Math.max(1, Number(CFG.examFocusLimit) || 2);
+let examAway = false;   // true while the user is away (blur + visibilitychange both fire on one app switch → count once)
+
+function cbtActive() { return Boolean(exam && exam.code && !document.getElementById("cbt").classList.contains("hidden")); }
+function examLeft() {
+  if (!cbtActive() || examAway) return;
+  examAway = true;
+  exam.focusLost = (exam.focusLost || 0) + 1;
+  if (exam.focusLost >= FOCUS_LIMIT) exam.flagged = true;
+  persistExam();
+}
+function examReturned() {
+  if (!examAway) return;
+  examAway = false;
+  if (!cbtActive()) return;
+  renderCbtWarn();
+}
+/* Pop-up shown each time the user comes back; ✕ dismisses it (the count is kept regardless). */
+function hideCbtWarn() { document.getElementById("cbt-warn").classList.add("hidden"); }
+function renderCbtWarn() {
+  const el = document.getElementById("cbt-warn");
+  const n = (exam && exam.focusLost) || 0;
+  if (!exam || !exam.code || !n) { el.classList.add("hidden"); return; }
+  el.classList.remove("hidden");
+  el.classList.toggle("bad", n >= FOCUS_LIMIT);
+  // sit just below the timer bar (its height varies with the device's safe area / text wrapping)
+  el.style.top = (document.querySelector(".cbt-top").offsetHeight + document.querySelector(".cbt-progress").offsetHeight + 8) + "px";
+  el.style.animation = "none"; void el.offsetWidth; el.style.animation = "";   // replay the slide-in
+  document.getElementById("cbt-warn-text").textContent = n >= FOCUS_LIMIT
+    ? `⚠ 試験画面から ${n} 回離れました。この受験は「要確認」として記録されます。`
+    : `⚠ 試験画面から離れました（${n} 回目）。あと ${FOCUS_LIMIT - n} 回離れると「要確認」として記録されます。`;
+}
+
 function closeCbt() {
   clearInterval(timerHandle);
+  document.getElementById("cbt").classList.remove("locked");
   document.getElementById("cbt").classList.add("hidden");
   document.getElementById("app-main").classList.remove("hidden");
   document.body.style.overflow = "";
@@ -1543,7 +1646,8 @@ function renderCbt() {
   const q = byId.get(exam.ids[i]);
   const chosen = exam.answers[i];
   const answeredCount = Object.keys(exam.answers).length;
-  document.getElementById("cbt-pos").textContent = `第 ${i + 1} 問 / ${n}　(解答済 ${answeredCount})`;
+  document.getElementById("cbt-pos").innerHTML = `第 ${i + 1} 問 / ${n}　(解答済 ${answeredCount})` +
+    (exam.code ? `<span class="cbt-code">コード ${escapeHtml(exam.code)}</span>` : "");
   document.getElementById("cbt-progress-fill").style.width = `${answeredCount / n * 100}%`;
   document.getElementById("cbt-prev").disabled = i === 0;
   const next = document.getElementById("cbt-next");
@@ -1634,7 +1738,9 @@ function scoreExam(ex) {
   used.forEach(s => { if (s.correct / s.total < CFG.passSubject) reasons.push(`${s.name} が科目別基準 ${pct(CFG.passSubject)} を下回っています`); });
   if (tabooHits.length >= CFG.tabooFailCount) reasons.push(`禁忌肢を ${tabooHits.length} 問で選択しました`);
   return {
-    type: ex.type, ids: ex.ids, answers: ex.answers, orders: ex.orders, correct, total, subjects: used, tabooHits, reasons,
+    type: ex.type, ids: ex.ids, answers: ex.answers, orders: ex.orders, code: ex.code || "", bankSize: ex.bankSize,
+    focusLost: ex.focusLost || 0, flagged: Boolean(ex.flagged),
+    correct, total, subjects: used, tabooHits, reasons,
     pass: reasons.length === 0,
     minutesUsed: Math.round((Math.min(Date.now(), ex.endAt) - ex.startAt) / 60000)
   };
@@ -1652,9 +1758,10 @@ function finishExam(timeUp) {
   exam = null;
   lsDel(examKey());
   closeCbt();
-  history.unshift({ date: new Date().toISOString(), type: result.type === "mini" ? "ミニ模試" : "本番形式", correct: result.correct, total: result.total, pass: result.pass });
+  history.unshift({ date: new Date().toISOString(), type: result.type === "mini" ? "ミニ模試" : "本番形式", correct: result.correct, total: result.total, pass: result.pass, code: result.code });
   queueExamResult({
-    type: result.type, correct: result.correct, total: result.total, pass: result.pass,
+    type: result.type, correct: result.correct, total: result.total, pass: result.pass, code: result.code,
+    focusLost: result.code ? result.focusLost : "", flagged: result.flagged,
     subjects: result.subjects, tabooHits: result.tabooHits.length, minutesUsed: result.minutesUsed
   });
   cacheLocal();
@@ -1673,8 +1780,13 @@ function renderResult(timeUp) {
     ${timeUp ? `<div class="warn-note" style="margin:0 0 14px">⏰ 試験時間が終了したため自動採点しました。</div>` : ""}
     <div class="card result-hero">
       <div style="font-size:0.78rem;color:var(--text-muted)">${r.type === "mini" ? "ミニ模試" : "本番形式"}・参考判定</div>
+      ${r.code ? `<div class="result-code">試験コード <b>${escapeHtml(r.code)}</b>${r.bankSize ? `（問題バンク ${r.bankSize}問）` : ""}</div>
+        <div class="integrity">
+          <span>所要時間 ${r.minutesUsed}分</span>
+          ${r.focusLost ? `<span class="bad">⚠ 試験画面から ${r.focusLost} 回離れました${r.flagged ? "（要確認）" : ""}</span>` : `<span class="ok">✓ 画面離脱 0回</span>`}
+        </div>` : ""}
       <div class="result-verdict ${r.pass ? "pass" : "fail"}">${r.pass ? "合格" : "不合格"}</div>
-      <div class="result-score"><strong>${r.correct}</strong> / ${r.total} 問正解（${pct(r.correct / r.total)}）・所要 ${r.minutesUsed}分</div>
+      <div class="result-score"><strong>${r.correct}</strong> / ${r.total} 問正解（${pct(r.correct / r.total)}）${r.code ? "" : `・所要 ${r.minutesUsed}分`}</div>
       ${r.reasons.length ? `<ul class="result-reasons">${r.reasons.map(x => `<li>・${escapeHtml(x)}</li>`).join("")}</ul>` : ""}
     </div>
 
@@ -1871,6 +1983,16 @@ function initApp() {
     persistExam(); renderCbt();
   };
   document.getElementById("cbt-list").onclick = openNavigator;
+  document.getElementById("cbt-warn-x").onclick = hideCbtWarn;
+
+  // 試験コードあり: count leaving the exam screen (app/tab switch, window losing focus)
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") examLeft(); else examReturned(); });
+  window.addEventListener("blur", examLeft);
+  window.addEventListener("focus", examReturned);
+  // …and block copying / selecting / the right-click & long-press menu in the exam screen
+  const cbtEl = document.getElementById("cbt");
+  ["copy", "cut", "paste", "contextmenu", "selectstart", "dragstart"].forEach(ev =>
+    cbtEl.addEventListener(ev, e => { if (cbtEl.classList.contains("locked")) e.preventDefault(); }));
   document.getElementById("cbt-finish").onclick = confirmFinish;
   document.getElementById("modal").addEventListener("click", e => { if (e.target.id === "modal" && exam) closeModal(); });
 
