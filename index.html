@@ -654,6 +654,10 @@ function mulberry32(seed) {   // small deterministic PRNG, identical results on 
   };
 }
 function pct(x) { return Math.round(x * 100) + "%"; }
+function fmtDur(ms) {   // 2532000 → "42分12秒", 45000 → "45秒"
+  const s = Math.round((ms || 0) / 1000), m = Math.floor(s / 60);
+  return m ? `${m}分${String(s % 60).padStart(2, "0")}秒` : `${s}秒`;
+}
 function mmss(ms) {
   const s = Math.max(0, Math.ceil(ms / 1000));
   const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
@@ -1533,7 +1537,7 @@ function renderExamStart() {
         <input id="exam-code" class="search-input code-input" type="text" inputmode="text" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="12" placeholder="例：EXAM01" value="${escapeHtml(examCodeDraft)}">
         <button type="button" class="btn-small" id="btn-gen-code">ランダム生成</button>
       </div>
-      <div class="note">同じコードを入力した人は、同じ問題・同じ順番で受験できます（選択肢の並びは人ごとに異なります）。空欄のときは毎回ランダムに出題されます。<br>コード使用時は、コピー操作ができず、試験画面から離れた回数が記録されます。</div>
+      <div class="note">同じコードを入力した人は、同じ問題・同じ順番で受験できます（選択肢の並びは人ごとに異なります）。空欄のときは毎回ランダムに出題されます。<br>コード使用時は、コピー操作ができず、試験画面から${FOCUS_GRACE_MS / 1000 >= 1 ? ` ${FOCUS_GRACE_MS / 1000} 秒以上` : ""}離れた回数が記録されます。</div>
       <button class="btn-primary" id="btn-start-exam" style="margin-top:14px" ${n === 0 ? "disabled" : ""}>試験を開始する</button>
     </div>
 
@@ -1582,7 +1586,9 @@ function openCbt() {
   document.body.style.overflow = "hidden";
   examAway = false;
   hideCbtWarn();          // the pop-up only appears right after coming back to the exam
+  const cameBack = exam && exam.code && settleAway();   // resumed after the page was reloaded while away
   renderCbt();
+  if (cameBack) renderCbtWarn();
   clearInterval(timerHandle);
   timerHandle = setInterval(tickTimer, 500);
   tickTimer();
@@ -1591,21 +1597,36 @@ function openCbt() {
 // Leaving the exam screen is only RECORDED (never kicks the user out): 1st time yellow pop-up,
 // from FOCUS_LIMIT on red pop-up + the attempt is marked 要確認 in the results and the sheet.
 const FOCUS_LIMIT = Math.max(1, Number(CFG.examFocusLimit) || 2);
-let examAway = false;   // true while the user is away (blur + visibilitychange both fire on one app switch → count once)
+// Only absences of at least this long count — a split-second accidental switch is ignored completely.
+const FOCUS_GRACE_MS = (CFG.examFocusGraceSec === undefined ? 5 : Math.max(0, Number(CFG.examFocusGraceSec) || 0)) * 1000;
+let examAway = false;   // true while the user is away (blur + visibilitychange both fire on one app switch → handled once)
 
 function cbtActive() { return Boolean(exam && exam.code && !document.getElementById("cbt").classList.contains("hidden")); }
 function examLeft() {
   if (!cbtActive() || examAway) return;
   examAway = true;
-  exam.focusLost = (exam.focusLost || 0) + 1;
-  if (exam.focusLost >= FOCUS_LIMIT) exam.flagged = true;
+  exam.awaySince = Date.now();   // persisted, so an absence still counts if the phone reloads the page meanwhile
   persistExam();
+}
+/* Close the current absence: count it only if it lasted FOCUS_GRACE_MS or longer. Returns true if counted. */
+function settleAway(now) {
+  if (!exam || !exam.awaySince) return false;
+  const end = Math.min(now || Date.now(), exam.endAt);          // time after the exam ended doesn't count as "outside"
+  const dur = Math.max(0, end - exam.awaySince);
+  const counted = dur >= FOCUS_GRACE_MS;
+  delete exam.awaySince;
+  if (counted) {
+    exam.awayMs = (exam.awayMs || 0) + dur;                    // total time outside = sum of the counted absences only
+    exam.focusLost = (exam.focusLost || 0) + 1;
+    if (exam.focusLost >= FOCUS_LIMIT) exam.flagged = true;
+  }
+  persistExam();
+  return counted;
 }
 function examReturned() {
   if (!examAway) return;
   examAway = false;
-  if (!cbtActive()) return;
-  renderCbtWarn();
+  if (settleAway() && cbtActive()) renderCbtWarn();   // short switches: no count, no pop-up
 }
 /* Pop-up shown each time the user comes back; ✕ dismisses it (the count is kept regardless). */
 function hideCbtWarn() { document.getElementById("cbt-warn").classList.add("hidden"); }
@@ -1740,6 +1761,9 @@ function scoreExam(ex) {
   return {
     type: ex.type, ids: ex.ids, answers: ex.answers, orders: ex.orders, code: ex.code || "", bankSize: ex.bankSize,
     focusLost: ex.focusLost || 0, flagged: Boolean(ex.flagged),
+    // exact time on the exam, split into inside / outside the exam screen (outside = counted absences ≥ grace period)
+    usedMs: Math.max(0, Math.min(Date.now(), ex.endAt) - ex.startAt),
+    awayMs: ex.awayMs || 0,
     correct, total, subjects: used, tabooHits, reasons,
     pass: reasons.length === 0,
     minutesUsed: Math.round((Math.min(Date.now(), ex.endAt) - ex.startAt) / 60000)
@@ -1748,6 +1772,8 @@ function scoreExam(ex) {
 
 function finishExam(timeUp) {
   if (!exam) return;
+  settleAway();   // time ran out while away → that absence still counts (if long enough)
+  examAway = false;
   const result = scoreExam(exam);
   // wrong answers in the mock exam count as misses and come back in today's review
   let changed = false;
@@ -1762,6 +1788,8 @@ function finishExam(timeUp) {
   queueExamResult({
     type: result.type, correct: result.correct, total: result.total, pass: result.pass, code: result.code,
     focusLost: result.code ? result.focusLost : "", flagged: result.flagged,
+    insideSec: result.code ? Math.round((result.usedMs - result.awayMs) / 1000) : "",
+    awaySec: result.code ? Math.round(result.awayMs / 1000) : "",
     subjects: result.subjects, tabooHits: result.tabooHits.length, minutesUsed: result.minutesUsed
   });
   cacheLocal();
@@ -1782,7 +1810,11 @@ function renderResult(timeUp) {
       <div style="font-size:0.78rem;color:var(--text-muted)">${r.type === "mini" ? "ミニ模試" : "本番形式"}・参考判定</div>
       ${r.code ? `<div class="result-code">試験コード <b>${escapeHtml(r.code)}</b>${r.bankSize ? `（問題バンク ${r.bankSize}問）` : ""}</div>
         <div class="integrity">
-          <span>所要時間 ${r.minutesUsed}分</span>
+          <span>所要時間 ${fmtDur(r.usedMs)}</span>
+          <span>画面内 ${fmtDur(Math.max(0, r.usedMs - r.awayMs))}</span>
+          <span class="${r.awayMs ? "bad" : ""}">画面外 ${fmtDur(r.awayMs)}</span>
+        </div>
+        <div class="integrity">
           ${r.focusLost ? `<span class="bad">⚠ 試験画面から ${r.focusLost} 回離れました${r.flagged ? "（要確認）" : ""}</span>` : `<span class="ok">✓ 画面離脱 0回</span>`}
         </div>` : ""}
       <div class="result-verdict ${r.pass ? "pass" : "fail"}">${r.pass ? "合格" : "不合格"}</div>
